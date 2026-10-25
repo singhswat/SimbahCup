@@ -291,7 +291,7 @@ async function drawPlayers() {
   html += '<div class="box"><h3>Squad (' + players.length + ")</h3>";
   if (!players.length) html += '<p class="muted">No players yet.</p>';
   players.forEach(function (p) {
-    html += '<div class="item row" data-id="' + p.id + '"><label>Name <input class="wide" data-f="name" value="' + esc(p.name) + '"></label><label>Role <input class="small" data-f="role" value="' + esc(p.role || "") + '"></label><label>No. <input type="number" min="0" data-f="shirt_no" value="' + (p.shirt_no === null ? "" : p.shirt_no) + '"></label><button type="button" data-act="save">Save</button><button type="button" class="del">Delete</button></div>';
+    html += '<div class="item row" data-id="' + p.id + '"><label>Name <input class="wide" data-f="name" value="' + esc(p.name) + '"></label><label>Role <input class="small" data-f="role" value="' + esc(p.role || "") + '"></label><label>No. <input type="number" min="0" data-f="shirt_no" value="' + (p.shirt_no === null ? "" : p.shirt_no) + '"></label><div style="flex-basis:100%" class="row">' + [["sixes", "Sixes"], ["fours", "Fours"], ["twos", "Twos"], ["ones", "Singles"], ["run_outs", "Run outs"]].map(function (f) { return "<label>" + f[1] + ' <input type="number" min="0" data-f="' + f[0] + '" value="' + (p[f[0]] || 0) + '"></label>'; }).join("") + '</div><button type="button" data-act="save">Save</button><button type="button" class="del">Delete</button></div>';
   });
   html += "</div>";
   $("tabBody").innerHTML = html;
@@ -308,7 +308,7 @@ async function drawPlayers() {
   $("tabBody").querySelectorAll(".item").forEach(function (item) {
     item.querySelector('[data-act="save"]').addEventListener("click", async function () {
       function val(f) { return item.querySelector('[data-f="' + f + '"]').value; }
-      var row = { name: val("name").trim(), role: val("role").trim() || null, shirt_no: numOrNull(val("shirt_no")) };
+      var row = { name: val("name").trim(), role: val("role").trim() || null, shirt_no: numOrNull(val("shirt_no")), sixes: Number(val("sixes") || 0), fours: Number(val("fours") || 0), twos: Number(val("twos") || 0), ones: Number(val("ones") || 0), run_outs: Number(val("run_outs") || 0) };
       var res = await db.from("players").update(row).eq("id", item.getAttribute("data-id"));
       say(res.error ? "Could not save: " + res.error.message : "Player saved.", res.error ? "err" : "ok");
     });
