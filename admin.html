@@ -89,6 +89,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
       <button type="button" data-tab="players" aria-pressed="false">Players</button>
       <button type="button" data-tab="scores" aria-pressed="false">Scores</button>
       <button type="button" data-tab="gallery" aria-pressed="false">Gallery</button>
+      <button type="button" data-tab="rules" aria-pressed="false">Rules</button>
       <button type="button" data-tab="sponsors" aria-pressed="false">Sponsors</button>
       <button type="button" data-tab="site" aria-pressed="false">Site</button>
     </nav>
@@ -207,6 +208,7 @@ async function showTab(name) {
   if (name === "gallery") await drawGallery();
   if (name === "site") await drawSite();
   if (name === "sponsors") await drawSponsors();
+  if (name === "rules") await drawRules();
 }
 
 // ---------- Teams ----------
@@ -367,6 +369,7 @@ async function drawScores() {
     html += '<span class="muted">' + (m.status === "played" ? "Played" : "Upcoming") + "</span>";
     html += '<div class="score"><span class="v">' + esc(teamNameById(m.home_team)) + '</span><input type="number" min="0" data-f="home_runs" placeholder="runs" value="' + (m.home_runs === null ? "" : m.home_runs) + '"><span>/</span><input type="number" min="0" max="10" data-f="home_wkts" placeholder="wkts" value="' + (m.home_wkts === null ? "" : m.home_wkts) + '"></div>';
     html += '<div class="score"><span class="v">' + esc(teamNameById(m.away_team)) + '</span><input type="number" min="0" data-f="away_runs" placeholder="runs" value="' + (m.away_runs === null ? "" : m.away_runs) + '"><span>/</span><input type="number" min="0" max="10" data-f="away_wkts" placeholder="wkts" value="' + (m.away_wkts === null ? "" : m.away_wkts) + '"></div>';
+    html += '<div class="score"><span class="v">Bonus points (winning team only)</span><label>Home <input type="number" min="0" max="4" data-f="home_bonus" value="' + (m.home_bonus || 0) + '"></label><label>Away <input type="number" min="0" max="4" data-f="away_bonus" value="' + (m.away_bonus || 0) + '"></label></div>';
     html += '<div class="row"><button type="button" class="gold" data-act="save">Save score</button><button type="button" data-act="clear">Clear score</button><button type="button" class="del" data-act="delete">Delete</button></div></div>';
   });
   html += "</div>";
@@ -391,6 +394,7 @@ async function drawScores() {
       var row = {
         home_runs: Number(val("home_runs")), home_wkts: Number(val("home_wkts") || 0),
         away_runs: Number(val("away_runs")), away_wkts: Number(val("away_wkts") || 0),
+        home_bonus: Number(val("home_bonus") || 0), away_bonus: Number(val("away_bonus") || 0),
         status: "played"
       };
       var res = await db.from("matches").update(row).eq("id", id);
@@ -409,7 +413,7 @@ async function drawScores() {
     });
 
     item.querySelector('[data-act="clear"]').addEventListener("click", async function () {
-      var row = { home_runs: null, home_wkts: null, away_runs: null, away_wkts: null, status: "upcoming" };
+      var row = { home_runs: null, home_wkts: null, away_runs: null, away_wkts: null, home_bonus: 0, away_bonus: 0, status: "upcoming" };
       var res = await db.from("matches").update(row).eq("id", id);
       if (res.error) { say("Could not clear the score: " + res.error.message, "err"); return; }
       await drawScores();
@@ -650,6 +654,47 @@ async function drawSponsors() {
   });
 }
 
+// ---------- Rules ----------
+async function drawRules() {
+  var res = await db.from("rules").select("*").eq("comp", comp()).order("sort_no");
+  var list = res.data || [];
+  var html = "<h2>Rules for " + COMP_NAMES[comp()] + "</h2>";
+  html += '<p class="muted">Write each rule point on its own line starting with "- ". Other lines become normal paragraphs. Changes show on the public Rules tab straight away.</p>';
+  html += '<div class="box"><h3>Add a rule section</h3><form id="addRuleForm" style="display:grid;gap:10px"><div class="row"><label>Title <input id="ruTitle" class="wide" required></label><label>Order no. <input id="ruSort" type="number" min="0" value="' + (list.length + 1) + '"></label></div>';
+  html += '<label>Text <textarea id="ruBody" rows="4" style="font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:10px;width:100%"></textarea></label><div><button class="gold" type="submit">Add section</button></div></form></div>';
+  list.forEach(function (r) {
+    html += '<div class="box" data-id="' + r.id + '"><div class="row"><label>Title <input class="wide" data-f="title" value="' + esc(r.title) + '"></label><label>Order <input type="number" min="0" data-f="sort_no" value="' + r.sort_no + '"></label></div>';
+    html += '<label style="margin-top:8px">Text <textarea rows="8" data-f="body" style="font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:10px;width:100%">' + esc(r.body) + '</textarea></label>';
+    html += '<div class="row" style="margin-top:8px"><button type="button" class="gold" data-act="save">Save</button><button type="button" class="del" data-act="delete">Delete</button></div></div>';
+  });
+  $("tabBody").innerHTML = html;
+
+  $("addRuleForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var ins = await db.from("rules").insert({ comp: comp(), title: $("ruTitle").value.trim(), body: $("ruBody").value, sort_no: Number($("ruSort").value || 0) });
+    if (ins.error) { say("Could not add: " + ins.error.message, "err"); return; }
+    await drawRules();
+    say("Rule section added.", "ok");
+  });
+  $("tabBody").querySelectorAll(".box[data-id]").forEach(function (box) {
+    var id = box.getAttribute("data-id");
+    function val(f) { return box.querySelector('[data-f="' + f + '"]').value; }
+    box.querySelector('[data-act="save"]').addEventListener("click", async function () {
+      var up = await db.from("rules").update({ title: val("title").trim(), body: val("body"), sort_no: Number(val("sort_no") || 0) }).eq("id", id);
+      say(up.error ? "Could not save: " + up.error.message : "Rule saved.", up.error ? "err" : "ok");
+    });
+    var del = box.querySelector('[data-act="delete"]');
+    del.addEventListener("click", function () {
+      armDelete(del, async function () {
+        var r = await db.from("rules").delete().eq("id", id);
+        if (r.error) { say("Could not delete: " + r.error.message, "err"); return; }
+        await drawRules();
+        say("Rule deleted.", "ok");
+      });
+    });
+  });
+}
+
 // ---------- Site settings and admins ----------
 async function drawSite() {
   var result = await db.from("settings").select("*");
@@ -662,6 +707,10 @@ async function drawSite() {
   html += '<label>Contact phone <input id="sPhone" type="text" value="' + esc(set.phone || "") + '"></label>';
   html += '<label>Home page intro line <input id="sHero" type="text" value="' + esc(set.hero_text || "") + '"></label>';
   html += '<label>Notice banner on the home page (leave empty for none) <input id="sNotice" type="text" placeholder="e.g. Indoor Juniors starts on 8 November" value="' + esc(set.notice || "") + '"></label>';
+  html += '<p class="muted" style="margin:6px 0 0">Per section (Juniors shown). Knockouts: one per line as Date | Match | Time.</p>';
+  html += '<label>Juniors knockout fixtures <textarea id="sKo" rows="4" style="font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:10px;width:100%">' + esc(set.knockouts_juniors || "") + '</textarea></label>';
+  html += '<label>Juniors venue <input id="sVenue" type="text" value="' + esc(set.venue_juniors || "") + '"></label>';
+  html += '<label>Juniors fixtures note <input id="sNote" type="text" value="' + esc(set.note_juniors || "") + '"></label>';
   html += '<div><button class="gold" type="submit">Save site text</button></div></form></div>';
 
   var adm = await db.from("admins").select("email").order("email");
@@ -680,7 +729,10 @@ async function drawSite() {
       { key: "email", value: $("sEmail").value.trim() },
       { key: "phone", value: $("sPhone").value.trim() },
       { key: "hero_text", value: $("sHero").value.trim() },
-      { key: "notice", value: $("sNotice").value.trim() }
+      { key: "notice", value: $("sNotice").value.trim() },
+      { key: "knockouts_juniors", value: $("sKo").value.trim() },
+      { key: "venue_juniors", value: $("sVenue").value.trim() },
+      { key: "note_juniors", value: $("sNote").value.trim() }
     ];
     var res = await db.from("settings").upsert(rows);
     say(res.error ? "Could not save: " + res.error.message : "Saved. The public site shows it on the next refresh.", res.error ? "err" : "ok");

@@ -101,6 +101,19 @@ h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.1; ma
 .sbd.six li:first-child .sbd-who { font-size: 20px; font-weight: 700; }
 .sbd.out h3 { color: #E0735A; }
 .sbd.out .sbd-n { color: #E0735A; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.facts span { border: 1px solid var(--tier); padding: 8px 12px; font-size: 13px; color: var(--muted); }
+.facts b { color: var(--fg); font-size: 16px; }
+.rule { border: 1px solid #2C3038; background: var(--panel); margin-bottom: 8px; }
+.rule summary { cursor: pointer; padding: 14px; font-weight: 700; }
+.rule summary:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: -2px; }
+.rule > ul, .rule > p { margin: 0; padding: 0 14px 12px 32px; color: var(--muted); }
+.rule > p { padding-left: 14px; }
+.rule li { margin-bottom: 6px; }
+.ko { margin-top: 22px; border: 1px solid var(--tier); background: var(--panel); padding: 14px; }
+.ko h3 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tier); }
+.ko-row { display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 8px; padding: 8px 0; border-top: 1px solid #2C3038; font-size: 14px; }
+.ko-row b { color: var(--tier); }
 .notice { margin: 16px 0 0; padding: 12px 14px; border: 1px solid var(--gold); background: rgba(201, 168, 76, 0.12); font-weight: 600; }
 .hero p { max-width: 46ch; color: var(--muted); margin: 16px 0 24px; }
 .btns { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -221,7 +234,7 @@ footer b { font-family: var(--display); color: var(--fg); letter-spacing: 0.06em
 .comp .pill { color: var(--tier); border-color: var(--tier); margin-bottom: 4px; display: inline-block; }
 .comp h2 { margin-top: 8px; }
 .comp h2::after { content: ""; display: block; width: 64px; height: 4px; background: var(--tier); margin-top: 12px; }
-.subtabs { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #2C3038; margin: 22px 0 20px; }
+.subtabs { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid #2C3038; margin: 22px 0 20px; }
 .subtabs a { font-family: var(--display); font-weight: 700; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; text-align: center; padding: 13px 4px; color: var(--muted); border-right: 1px solid #2C3038; }
 .subtabs a:last-child { border-right: 0; }
 .subtabs a[aria-current="page"] { background: var(--tier); color: var(--bg); }
@@ -317,6 +330,8 @@ var NOTICE = "";
 var sponsorList = [];
 var statTeams = [];
 var statPlayers = [];
+var rulesList = [];
+var siteInfo = {};
 var brandList = [];
 
 var CFG = window.SIMBAH_CONFIG || {};
@@ -327,6 +342,8 @@ var galleryItems = [];
 // Points for the tables that are worked out from scores
 var WIN_POINTS = 2;
 var TIE_POINTS = 1;
+// Juniors use the U15 rules: win 6, tie 3, plus bonus points set on each match.
+var POINTS_BY_COMP = { juniors: { win: 6, tie: 3 } };
 
 // The four sections. Teams, fixtures and players are filled in from the database.
 var COMPS = {
@@ -357,9 +374,11 @@ function teamRow(team, matches) {
     var mine = isHome ? m.home_runs : m.away_runs;
     var theirs = isHome ? m.away_runs : m.home_runs;
     row.p += 1;
-    if (mine > theirs) { row.w += 1; row.pts += WIN_POINTS; }
+    var rule = POINTS_BY_COMP[team.comp] || { win: WIN_POINTS, tie: TIE_POINTS };
+    var bonus = isHome ? (m.home_bonus || 0) : (m.away_bonus || 0);
+    if (mine > theirs) { row.w += 1; row.pts += rule.win + bonus; }
     else if (mine < theirs) { row.l += 1; }
-    else { row.d += 1; row.pts += TIE_POINTS; }
+    else { row.d += 1; row.pts += rule.tie; }
   });
   return row;
 }
@@ -404,6 +423,8 @@ async function loadData() {
     var sp = await db.from("sponsors").select("*").order("sort_no");
     var br = await db.from("sponsor_brands").select("*").order("created_at");
     if (!sp.error && !br.error) { sponsorList = sp.data; brandList = br.data; }
+    var rl = await db.from("rules").select("*").order("sort_no");
+    if (!rl.error) rulesList = rl.data;
     // Site settings from the admin page. If they fail to load, the defaults above stay.
     var settings = await db.from("settings").select("*");
     if (!settings.error) {
@@ -412,6 +433,7 @@ async function loadData() {
         if (row.key === "phone" && row.value) PHONE = row.value;
         if (row.key === "hero_text" && row.value) HERO_TEXT = row.value;
         if (row.key === "notice") NOTICE = row.value;
+        siteInfo[row.key] = row.value;
       });
     }
     loadState = "ready";
@@ -586,6 +608,55 @@ function wireStats() {
   draw();
 }
 
+// ---------- Rules, knockouts and venue ----------
+// Rule text: lines starting "- " become bullets, other lines become paragraphs
+function ruleBody(text) {
+  var html = "", inList = false;
+  String(text || "").split("\n").forEach(function (line) {
+    line = line.trim();
+    if (line.indexOf("- ") === 0) {
+      if (!inList) { html += "<ul>"; inList = true; }
+      html += "<li>" + esc(line.slice(2)) + "</li>";
+    } else {
+      if (inList) { html += "</ul>"; inList = false; }
+      if (line) html += "<p>" + esc(line) + "</p>";
+    }
+  });
+  if (inList) html += "</ul>";
+  return html;
+}
+
+function viewRules(comp) {
+  var list = rulesList.filter(function (r) { return r.comp === comp.key; });
+  if (!list.length) return '<div class="empty"><h3>Rules coming soon</h3><p>The ' + comp.name + ' rules will be added here.</p></div>';
+  var html = "";
+  if (comp.key === "juniors") {
+    html += '<div class="facts"><span><b>8</b> players</span><span><b>13</b> overs</span><span><b>6</b> pts a win</span><span>Born on or after <b>1 Sep 2011</b></span></div>';
+  }
+  list.forEach(function (r, i) {
+    html += '<details class="rule"' + (i === 0 ? " open" : "") + "><summary>" + esc(r.title) + "</summary>" + ruleBody(r.body) + "</details>";
+  });
+  return html;
+}
+
+// Knockout dates, venue and notes under the fixtures list. Set on the Site tab of the admin page.
+function fixtureExtras(key) {
+  var html = "";
+  var ko = siteInfo["knockouts_" + key];
+  if (ko) {
+    html += '<section class="ko"><h3>Knockout fixtures</h3>';
+    ko.split("\n").forEach(function (line) {
+      var p = line.split("|");
+      if (p.length < 2) return;
+      html += '<div class="ko-row"><span>' + esc(p[0].trim()) + "</span><b>" + esc(p[1].trim()) + "</b><span>" + esc((p[2] || "").trim()) + "</span></div>";
+    });
+    html += "</section>";
+  }
+  if (siteInfo["note_" + key]) html += '<p class="note">' + esc(siteInfo["note_" + key]) + "</p>";
+  if (siteInfo["venue_" + key]) html += '<p class="note"><b>Venue:</b> ' + esc(siteInfo["venue_" + key]) + "</p>";
+  return html;
+}
+
 function viewHome() {
   var html = "";
   if (NOTICE) html += '<p class="notice" role="status">' + esc(NOTICE) + "</p>";
@@ -612,13 +683,13 @@ function viewHome() {
     html += "</div>";
   }
   html += '<div class="how"><p class="eyebrow">Enter a team</p><h3>Not sure which section?</h3>';
-  html += '<p class="muted" style="margin:0">Juniors are players under 15. Players aged 15 and over play in Seniors, and Adults is open to adult players. Email <b>' + EMAIL + "</b> or call <b>" + PHONE + "</b> and we will place you.</p></div>";
+  html += '<p class="muted" style="margin:0">Juniors are players under 15 (born on or after 1 September 2011). Players aged 15 and over play in Seniors, and Adults is open to adult players. Email <b>' + EMAIL + "</b> or call <b>" + PHONE + "</b> and we will place you.</p></div>";
   return html;
 }
 
 // ---------- Competition page ----------
 var teamFilter = "all";
-var TABS = [["table", "Table"], ["fixtures", "Fixtures"], ["results", "Results"], ["teams", "Teams"]];
+var TABS = [["table", "Table"], ["fixtures", "Fixtures"], ["results", "Results"], ["teams", "Teams"], ["rules", "Rules"]];
 
 function viewComp(comp, tab) {
   var html = '<div class="comp t-' + comp.key + '">' + (comp.key === "juniors" ? '<span class="ball big" aria-hidden="true"></span>' : "") + '<p class="eyebrow" style="color:var(--tier)">' + comp.season + " · " + comp.age + "</p>";
@@ -628,10 +699,12 @@ function viewComp(comp, tab) {
     html += '<a href="#' + comp.key + (t[0] === "table" ? "" : "-" + t[0]) + '"' + (t[0] === tab ? ' aria-current="page"' : "") + ">" + t[1] + "</a>";
   });
   html += "</nav>";
-  html += sponsorBox(comp.key);
+  if (tab !== "rules") html += sponsorBox(comp.key);
 
   if (tab === "table") {
     html += comp.table.length ? fullTable(comp) + '<p class="note">P played, W won, L lost, D drawn, Pts points, NRR net run rate.</p>' : emptyState(comp, "The table");
+  } else if (tab === "rules") {
+    html += viewRules(comp);
   } else if (tab === "teams") {
     if (!comp.table.length) html += emptyState(comp, "Teams");
     else {
@@ -659,6 +732,8 @@ function viewComp(comp, tab) {
       html += '</select></div><div id="matchList"></div>';
     }
   }
+  if (tab === "fixtures") html += fixtureExtras(comp.key);
+  if (tab === "rules") html += sponsorBox(comp.key);
   return html + "</div>";
 }
 

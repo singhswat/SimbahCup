@@ -27,6 +27,7 @@ A separate Supabase project called "Simbah Cup" holds the tables `teams`, `playe
 ## Using the admin page
 
 - Teams: pick a section, add teams, edit names, optional manual table figures.
+- Rules: edit the rules text for each section. Bonus points for a match (kit, 10 sixes, all out) are typed on the Scores tab. The Site tab holds knockout dates, venue and fixture notes.
 - Players: pick a team, add players with role and shirt number. Each player also has sixes, fours, twos, singles and run-out counts, which feed the Stats page.
 - Scores: add a match (home, away, date, time), then enter runs and wickets and save. It moves to Results and the table updates. Clear score puts it back to upcoming.
 - Gallery: upload several photos or videos at once. Photos are resized in the browser. Videos up to 50 MB.
