@@ -114,6 +114,24 @@ h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.1; ma
 .ko h3 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--tier); }
 .ko-row { display: grid; grid-template-columns: 1.2fr 1fr 0.9fr; gap: 8px; padding: 8px 0; border-top: 1px solid #2C3038; font-size: 14px; }
 .ko-row b { color: var(--tier); }
+.hgrid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.hlabel { margin: 0 0 4px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.mini { border: 1px solid var(--line); background: var(--panel); padding: 14px; }
+.mini h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
+.mini h3 a { color: var(--fg); text-decoration: none; }
+.mini table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.mini th { text-align: right; font-size: 11px; color: var(--muted); font-weight: 600; padding: 2px 0 6px; }
+.mini th:first-child, .mini td:first-child { text-align: left; }
+.mini td { text-align: right; padding: 6px 0; border-top: 1px solid var(--line); }
+.mini td.tn, .mini td.tn:nth-child(2) { text-align: left; overflow-wrap: anywhere; padding-right: 8px; }
+.mini td b { color: var(--gold-hi); }
+.mini table { min-width: 0; table-layout: fixed; }
+.mini th:first-child { width: auto; }
+.mini th:not(:first-child), .mini td:not(.tn) { width: 34px; }
+.mini th:nth-child(2), .mini td:nth-child(2) { text-align: right; }
+.mini td.tn:nth-child(2) { text-align: left; }
+.champ { border: 1px solid var(--gold); background: linear-gradient(145deg, rgba(201, 168, 76, 0.14), var(--panel)); padding: 16px; display: grid; gap: 4px; }
+.champ .t { font-size: 22px; font-weight: 800; }
 .notice { margin: 16px 0 0; padding: 12px 14px; border: 1px solid var(--gold); background: rgba(201, 168, 76, 0.12); font-weight: 600; }
 .hero p { max-width: 46ch; color: var(--muted); margin: 16px 0 24px; }
 .btns { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -697,6 +715,67 @@ function fixtureExtras(key) {
   return html;
 }
 
+// ---------- Home page: next matches, latest results, champions, small tables ----------
+function todayIso() {
+  var d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+// Collects fixtures from every section. wantResults picks played or upcoming matches.
+function homeMatches(wantResults) {
+  var out = [];
+  Object.keys(COMPS).forEach(function (k) {
+    COMPS[k].fixtures.forEach(function (f) {
+      if (wantResults ? !!f.r : (!f.r && f.date >= todayIso())) out.push({ comp: COMPS[k], f: f });
+    });
+  });
+  out.sort(function (a, b) {
+    var x = a.f.date + a.f.time, y = b.f.date + b.f.time;
+    return wantResults ? y.localeCompare(x) : x.localeCompare(y);
+  });
+  return out;
+}
+
+function homeMatchBlock(title, list, limit, link) {
+  if (!list.length) return "";
+  var html = '<p class="lead-in">' + title + '</p><div class="hgrid">';
+  list.slice(0, limit).forEach(function (x) {
+    html += "<div><p class=\"hlabel\">" + esc(x.comp.title) + "</p>" + matchCard(x.comp, x.f) + "</div>";
+  });
+  return html + "</div>";
+}
+
+function miniTable(comp) {
+  if (!comp.table.length) return "";
+  var html = '<div class="mini"><h3><a href="#' + comp.key + '">' + esc(comp.title) + '</a></h3><table><thead><tr><th>Team</th><th>P</th><th>W</th><th>Pts</th></tr></thead><tbody>';
+  comp.table.slice(0, 3).forEach(function (t, i) {
+    html += '<tr><td class="tn">' + (i + 1) + ". " + t.name + "</td><td>" + t.p + "</td><td>" + t.w + "</td><td><b>" + t.pts + "</b></td></tr>";
+  });
+  return html + "</tbody></table></div>";
+}
+
+function homeBoards() {
+  var html = "";
+  var next = homeMatches(false), latest = homeMatches(true);
+  html += homeMatchBlock("Next matches", next, 3);
+  html += homeMatchBlock("Latest results", latest, 3);
+
+  var minis = "";
+  ["juniors", "adults", "seniors"].forEach(function (k) { minis += miniTable(COMPS[k]); });
+  if (minis) html += '<p class="lead-in">Table leaders</p><div class="hgrid">' + minis + "</div>";
+
+  // Previous winners: the leader of any section marked as finished
+  var champs = "";
+  Object.keys(COMPS).forEach(function (k) {
+    var c = COMPS[k];
+    if (/complete/i.test(c.status) && c.table.length) {
+      champs += '<div class="champ"><span class="hlabel">' + esc(c.title) + '</span><span class="t">' + c.table[0].name + '</span><span class="muted">Champions with ' + c.table[0].pts + " points</span></div>";
+    }
+  });
+  if (champs) html += '<p class="lead-in">Previous winners</p><div class="hgrid">' + champs + "</div>";
+  return html;
+}
+
 function viewHome() {
   var html = "";
   if (NOTICE) html += '<p class="notice" role="status">' + esc(NOTICE) + "</p>";
@@ -705,6 +784,7 @@ function viewHome() {
   html += '<p class="hero-sub">' + esc(HERO_TEXT) + "</p></div>";
   html += '<img class="crest" src="' + CREST + '" alt="Simbah Cup crest: a crowned lion inside a gold laurel wreath" width="320" height="297"></div></section>';
 
+  html += homeBoards();
   html += '<p class="lead-in">Indoor · Now open</p><div class="tiles three">' + tile(COMPS.adults) + tile(COMPS.seniors) + tile(COMPS.juniors) + "</div>";
   html += '<p class="lead-in">Outdoor · Last season</p><div class="tiles">' + tile(COMPS.outdoor, true) + "</div>";
 
