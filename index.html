@@ -331,7 +331,7 @@ var TIE_POINTS = 1;
 // The four sections. Teams, fixtures and players are filled in from the database.
 var COMPS = {
   adults:  { key: "adults",  title: "Indoor Adults",  name: "Adults",  season: "Indoor", age: "Open to adult players", ghost: "OPEN",   status: "Entries open" },
-  seniors: { key: "seniors", title: "Indoor Seniors", name: "Seniors", season: "Indoor", age: "Senior players",        ghost: "SENIOR", status: "Entries open" },
+  seniors: { key: "seniors", title: "Indoor Seniors", name: "Seniors", season: "Indoor", age: "Age 15 and over",        ghost: "SENIOR", status: "Entries open" },
   juniors: { key: "juniors", title: "Indoor Juniors", name: "Juniors", season: "Indoor", age: "Under 15 · Come and play", ghost: "U15", status: "Entries open" },
   outdoor: { key: "outdoor", title: "Outdoor 2026",   name: "Outdoor", season: "Outdoor 2026", age: "Season complete", ghost: "2026", status: "Completed" }
 };
@@ -612,7 +612,7 @@ function viewHome() {
     html += "</div>";
   }
   html += '<div class="how"><p class="eyebrow">Enter a team</p><h3>Not sure which section?</h3>';
-  html += '<p class="muted" style="margin:0">Juniors are players under 15. Everyone else plays in Adults or Seniors. Email <b>' + EMAIL + "</b> or call <b>" + PHONE + "</b> and we will place you.</p></div>";
+  html += '<p class="muted" style="margin:0">Juniors are players under 15. Players aged 15 and over play in Seniors, and Adults is open to adult players. Email <b>' + EMAIL + "</b> or call <b>" + PHONE + "</b> and we will place you.</p></div>";
   return html;
 }
 
