@@ -1,47 +1,33 @@
 # Simbah Cup website
 
-Mobile-first site for the Simbah Cup cricket tournament (Milton Keynes), with a password-protected admin page.
+Mobile-first site for the Simbah Cup cricket tournament (Milton Keynes). No database and no sign-up for visitors: everything is plain files in this repo.
 
 ## Files
 
-- `index.html` is the public site: Indoor Adults, Indoor Seniors, Indoor Juniors (under 15), Outdoor 2026, plus Gallery and Contact. It reads live data from Supabase.
-- `admin.html` is the admin page (not linked from the public site, and marked noindex). Use it to add teams and players, enter scores, and upload photos and videos.
-- `config.js` holds the Supabase project URL and the public (anon) key. The anon key is safe to publish: row level security means only admins can change anything.
-- `SimbahCup.jpeg` is the original crest. A small copy is already embedded in `index.html`.
+- `index.html` is the public site: Indoor Adults, Seniors, Juniors (under 15), Outdoor 2026, Stats, Gallery and Contact.
+- `admin.html` is the admin page (not linked from the site, marked noindex).
+- `data/site.json` holds teams, players, sponsors, rules, gallery list and site text.
+- `data/YYYY-MM-DD.json` is one file per match day: the matches, scores, bonus points and each player's sixes, fours, twos, singles and run outs for that day. `site.json` lists the match days in `sundays`.
+- `gallery/` and `sponsors/` hold uploaded photos, videos and logos.
+- `SimbahCup.jpeg` is the original crest. A small copy is embedded in `index.html`.
 
-No build step. Upload all four files to the same folder on your web host (or GitHub Pages).
+The site reads these files each time it opens and works out the tables and player stats itself (win 2 points, tie 1; Juniors use the U15 rules: win 6, tie 3, plus bonus points).
 
-## Backend
+## Hosting
 
-A separate Supabase project called "Simbah Cup" holds the tables `teams`, `players`, `matches`, `gallery` and `admins`, plus a public storage bucket `gallery` for uploads.
-
-- Anyone can read. Only people listed in `admins` (matched by sign-in email) can write.
-- Standings are worked out from played matches (win 2 points, tie 1). If a team has a value in Pts on the Teams tab, its typed table figures are used instead. Outdoor 2026 uses typed figures.
-
-## Adding an admin
-
-1. Supabase dashboard, Authentication, Users, Add user: enter the email and a password.
-2. SQL editor: `insert into public.admins (email) values ('you@example.com');`
-3. Open `admin.html` and sign in.
+GitHub Pages: repo Settings, Pages, deploy from branch `main`, folder `/ (root)`. The site is then at `https://singhswat.github.io/SimbahCup/`. After a change is saved it shows within a couple of minutes.
 
 ## Using the admin page
 
-- Teams: pick a section, add teams, edit names, optional manual table figures.
-- Rules: edit the rules text for each section. Bonus points for a match (kit, 10 sixes, all out) are typed on the Scores tab. The Site tab holds knockout dates, venue and fixture notes.
-- Players: pick a team, add players with role and shirt number. Each player also has sixes, fours, twos, singles and run-out counts, which feed the Stats page.
-- Scores: add a match (home, away, date, time), then enter runs and wickets and save. It moves to Results and the table updates. Clear score puts it back to upcoming.
-- Gallery: upload several photos or videos at once. Photos are resized in the browser. Videos up to 50 MB.
+1. Open `admin.html` on the site. Enter the repo (`singhswat/SimbahCup`), branch `main` and an access token. The token is only kept in that browser.
+2. Make changes in any tab. Nothing goes live until you press **Save to website** at the bottom. That saves the changed files to GitHub.
+3. Tabs: Matches (pick a match day, add matches, type scores, bonus points and player shots), Teams (teams and players), Gallery, Sponsors, Rules, Site (contact details, notice banner, knockouts, venue).
 
-- Sponsors: add a sponsor for one event or all events, mark a main sponsor, upload its logo, and add its brands with images. They show in a gold "Presented by" container under each section heading, and on the home page.
-- Site: contact email and phone, the home page intro line, an optional notice banner, and the list of admin emails (add or remove people).
-- Players, matches and gallery captions can all be edited in place.
+Making a token: GitHub, Settings, Developer settings, Personal access tokens, Fine-grained tokens, Generate. Pick only this repository and give it **Contents: Read and write**. Give a separate token to each person so one can be removed without affecting the others. Anyone with a token can change the site.
 
-Delete buttons need two taps to avoid accidents.
+## Things to know
 
-## Juniors
-
-Only show names and photos of under 15s that parents have agreed to.
-
-## Contact details
-
-`EMAIL` and `PHONE` near the top of the script in `index.html`.
+- Each match day is its own file, so two people entering scores for different days never clash. If two people save the same file, the second sees a message and must reload.
+- Player shots are counted by player name. If you rename a player, shots entered under the old name no longer count.
+- Net run rate and the head-to-head tie-break are not worked out automatically. Ties on points are ordered by wins.
+- Only show names and photos of under 15s that parents have agreed to.

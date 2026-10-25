@@ -12,7 +12,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 "Segoe UI", Arial, sans-serif; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 60px max(16px, env(safe-area-inset-left, 0px)); }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 "Segoe UI", Arial, sans-serif; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 110px max(16px, env(safe-area-inset-left, 0px)); }
 .wrap { max-width: 900px; margin: 0 auto; }
 header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--line); }
 header h1 { font-size: 18px; margin: 0; letter-spacing: 0.06em; text-transform: uppercase; }
@@ -23,16 +23,18 @@ h3 { font-size: 15px; margin: 0 0 8px; color: var(--gold); text-transform: upper
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
 .row > * { min-width: 0; }
 label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
-input, select { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); padding: 10px; max-width: 100%; }
+input, select, textarea { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); padding: 10px; max-width: 100%; }
+textarea { width: 100%; }
 input[type="number"] { width: 78px; }
 input.wide { width: 220px; }
 input.small { width: 90px; }
 button { font: inherit; font-weight: 700; cursor: pointer; border: 1px solid var(--gold); background: transparent; color: var(--fg); padding: 10px 14px; }
-button.gold { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+button.gold { background: var(--gold); color: var(--bg); }
 button.del { border-color: var(--bad); color: var(--bad); }
 button.del.sure { background: var(--bad); color: var(--bg); }
-button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
-.tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); border: 1px solid var(--line); margin: 16px 0; }
+button:disabled { opacity: 0.5; cursor: default; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+.tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); border: 1px solid var(--line); margin: 16px 0; }
 .tabs button { border: 0; border-right: 1px solid var(--line); padding: 14px 4px; color: var(--muted); }
 .tabs button:last-child { border-right: 0; }
 .tabs button[aria-pressed="true"] { background: var(--gold); color: var(--bg); }
@@ -43,11 +45,16 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .item { border-top: 1px solid var(--line); padding: 12px 0; }
 .item:first-child { border-top: 0; }
 .score { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
-.score span.v { color: var(--muted); }
+details { margin-top: 8px; }
+summary { cursor: pointer; font-weight: 700; padding: 6px 0; }
+.stat-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; padding: 6px 0; border-top: 1px solid var(--line); }
+.stat-row .nm { flex: 1 1 130px; font-weight: 600; }
+.stat-row input[type="number"] { width: 64px; padding: 8px; }
 .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .thumbs figure { margin: 0; border: 1px solid var(--line); padding: 6px; background: var(--bg); display: grid; gap: 6px; }
 .thumbs img, .thumbs video { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #000; }
 .thumbs figcaption { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+#saveBar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--panel); border-top: 2px solid var(--gold); padding: 12px max(16px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; gap: 12px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
 [hidden] { display: none !important; }
 </style>
 </head>
@@ -60,17 +67,18 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 
   <div id="msg" role="status" aria-live="polite"></div>
 
-  <!-- Sign in -->
+  <!-- Connect to the GitHub repo -->
   <section id="loginBox" class="box" hidden>
-    <h3>Sign in</h3>
-    <form id="loginForm" class="row">
-      <label>Email <input id="loginEmail" type="email" autocomplete="username" required></label>
-      <label>Password <input id="loginPass" type="password" autocomplete="current-password" required></label>
-      <button class="gold" type="submit">Sign in</button>
+    <h3>Connect</h3>
+    <p class="muted">Everything on the website is stored as files in the GitHub repo. To change anything, this page needs a GitHub access token that can edit that repo. The token is only kept in this browser. Only sign in on a device you trust.</p>
+    <form id="loginForm" style="display:grid;gap:10px">
+      <label>GitHub repo (owner/name) <input id="repoIn" value="singhswat/SimbahCup" required></label>
+      <label>Branch <input id="branchIn" value="main" required></label>
+      <label>Access token <input id="tokenIn" type="password" autocomplete="off" required></label>
+      <div><button class="gold" type="submit">Connect</button></div>
     </form>
   </section>
 
-  <!-- Admin panel -->
   <section id="panel" hidden>
     <div class="box row" id="compBar">
       <label>Section
@@ -81,16 +89,15 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
           <option value="outdoor">Outdoor 2026</option>
         </select>
       </label>
-      <span class="muted">Teams, players and scores belong to this section.</span>
+      <span class="muted">Teams, players, rules and page text belong to this section.</span>
     </div>
 
     <nav class="tabs" aria-label="Admin sections">
-      <button type="button" data-tab="teams" aria-pressed="true">Teams</button>
-      <button type="button" data-tab="players" aria-pressed="false">Players</button>
-      <button type="button" data-tab="scores" aria-pressed="false">Scores</button>
+      <button type="button" data-tab="sundays" aria-pressed="true">Matches</button>
+      <button type="button" data-tab="teams" aria-pressed="false">Teams</button>
       <button type="button" data-tab="gallery" aria-pressed="false">Gallery</button>
-      <button type="button" data-tab="rules" aria-pressed="false">Rules</button>
       <button type="button" data-tab="sponsors" aria-pressed="false">Sponsors</button>
+      <button type="button" data-tab="rules" aria-pressed="false">Rules</button>
       <button type="button" data-tab="site" aria-pressed="false">Site</button>
     </nav>
 
@@ -98,39 +105,33 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
   </section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="config.js"></script>
+<div id="saveBar" hidden>
+  <span id="saveInfo" class="muted">No unsaved changes.</span>
+  <button id="saveBtn" class="gold" type="button">Save to website</button>
+</div>
+
 <script>
 // ---------- Setup ----------
-var CFG = window.SIMBAH_CONFIG;
-var db = supabase.createClient(CFG.url, CFG.key);
 var COMP_NAMES = { adults: "Indoor Adults", seniors: "Indoor Seniors", juniors: "Indoor Juniors", outdoor: "Outdoor 2026" };
-var currentTab = "teams";
-var currentTeamId = "";   // team picked on the Players tab
-var teams = [];           // teams of the chosen section
+var REPO = "", BRANCH = "main", TOKEN = "";
+var site = null;          // contents of data/site.json
+var siteSha = "";
+var days = {};            // date -> { data: {...}, sha: "" }
+var dirtySite = false;
+var dirtyDays = {};       // date -> true
+var pendingDeletes = [];  // files to remove from the repo when saving
+var currentTab = "sundays";
+var currentDate = "";
 
 function $(id) { return document.getElementById(id); }
-
 function esc(text) {
-  return String(text == null ? "" : text)
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return String(text == null ? "" : text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
-
-function say(text, kind) {
-  var box = $("msg");
-  box.textContent = text;
-  box.className = kind || "";
-}
-
+function say(text, kind) { $("msg").textContent = text; $("msg").className = kind || ""; }
 function comp() { return $("compSel").value; }
+function numOrNull(text) { return (text === "" || text === null || text === undefined) ? null : Number(text); }
+function num(text) { return Number(text || 0); }
 
-// Turns "" into null and text numbers into numbers, for number boxes
-function numOrNull(text) {
-  if (text === "" || text === null || text === undefined) return null;
-  return Number(text);
-}
-
-// Delete buttons ask twice: first click arms the button, second click deletes
 function armDelete(button, action) {
   if (!button.classList.contains("sure")) {
     button.classList.add("sure");
@@ -141,303 +142,401 @@ function armDelete(button, action) {
   action();
 }
 
-// ---------- Sign in ----------
-async function start() {
-  var result = await db.auth.getSession();
-  if (result.data.session) { await checkAdmin(); } else { showLogin(); }
+// ---------- GitHub ----------
+function ghUrl(path) { return "https://api.github.com/repos/" + REPO + "/contents/" + path; }
+function ghHeaders() { return { "Authorization": "Bearer " + TOKEN, "Accept": "application/vnd.github+json" }; }
+
+function fromBase64(b64) {
+  var bin = atob(b64.replace(/\n/g, ""));
+  var bytes = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function toBase64(text) {
+  var bytes = new TextEncoder().encode(text);
+  var bin = "";
+  for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+function blobToBase64(blob) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function () { resolve(String(reader.result).split(",")[1]); };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
-function showLogin() {
-  $("loginBox").hidden = false;
-  $("panel").hidden = true;
-  $("signOutBtn").hidden = true;
+// Reads one JSON file. Returns { data, sha } or null if the file does not exist.
+async function ghReadJson(path) {
+  var res = await fetch(ghUrl(path) + "?ref=" + encodeURIComponent(BRANCH), { headers: ghHeaders(), cache: "no-store" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("GitHub said " + res.status + " reading " + path);
+  var body = await res.json();
+  return { data: JSON.parse(fromBase64(body.content)), sha: body.sha };
 }
 
-async function checkAdmin() {
-  var result = await db.rpc("is_admin");
-  if (result.error || result.data !== true) {
-    say("This account is not an admin of the Simbah Cup site.", "err");
-    await db.auth.signOut();
-    showLogin();
-    return;
+// Writes one file (base64 content). sha is needed when the file already exists.
+async function ghWrite(path, base64, sha, message) {
+  var payload = { message: message, content: base64, branch: BRANCH };
+  if (sha) payload.sha = sha;
+  var res = await fetch(ghUrl(path), { method: "PUT", headers: ghHeaders(), body: JSON.stringify(payload) });
+  if (res.status === 409 || res.status === 422) throw new Error("Someone else saved " + path + " first. Reload this page and redo your change.");
+  if (!res.ok) throw new Error("GitHub said " + res.status + " saving " + path);
+  var body = await res.json();
+  return body.content.sha;
+}
+
+async function ghDelete(path) {
+  var res = await fetch(ghUrl(path) + "?ref=" + encodeURIComponent(BRANCH), { headers: ghHeaders(), cache: "no-store" });
+  if (!res.ok) return;
+  var body = await res.json();
+  await fetch(ghUrl(path), { method: "DELETE", headers: ghHeaders(), body: JSON.stringify({ message: "Remove " + path, sha: body.sha, branch: BRANCH }) });
+}
+
+// ---------- Connect ----------
+function readSaved() {
+  try { return JSON.parse(localStorage.getItem("simbahAdmin") || "{}"); } catch (e) { return {}; }
+}
+function writeSaved(obj) {
+  try { localStorage.setItem("simbahAdmin", JSON.stringify(obj)); } catch (e) { /* storage blocked: sign in each visit */ }
+}
+
+async function connect(repo, branch, token) {
+  REPO = repo; BRANCH = branch; TOKEN = token;
+  say("Connecting...", "");
+  var check = await fetch("https://api.github.com/repos/" + REPO, { headers: ghHeaders() });
+  if (!check.ok) { say("Could not open that repo. Check the repo name and the token.", "err"); return false; }
+  var info = await check.json();
+  if (!info.permissions || !info.permissions.push) { say("This token cannot edit the repo. It needs Contents: read and write.", "err"); return false; }
+  var s = await ghReadJson("data/site.json");
+  if (!s) { say("data/site.json was not found in the repo.", "err"); return false; }
+  site = s.data; siteSha = s.sha;
+  site.sundays = site.sundays || [];
+  site.teams = site.teams || [];
+  days = {};
+  for (var i = 0; i < site.sundays.length; i++) {
+    var d = await ghReadJson("data/" + site.sundays[i] + ".json");
+    days[site.sundays[i]] = d ? { data: d.data, sha: d.sha } : { data: { date: site.sundays[i], matches: [] }, sha: "" };
   }
+  currentDate = nextDate();
+  writeSaved({ repo: REPO, branch: BRANCH, token: TOKEN });
   $("loginBox").hidden = true;
   $("panel").hidden = false;
   $("signOutBtn").hidden = false;
+  $("saveBar").hidden = false;
   say("", "");
-  showTab("teams");
+  showTab("sundays");
+  return true;
+}
+
+// The first match day today or later, otherwise the last one
+function nextDate() {
+  var today = new Date().toISOString().slice(0, 10);
+  var list = site.sundays.slice().sort();
+  for (var i = 0; i < list.length; i++) { if (list[i] >= today) return list[i]; }
+  return list.length ? list[list.length - 1] : "";
 }
 
 $("loginForm").addEventListener("submit", async function (e) {
   e.preventDefault();
-  say("Signing in...", "");
-  var result = await db.auth.signInWithPassword({ email: $("loginEmail").value.trim(), password: $("loginPass").value });
-  if (result.error) { say("Sign in failed: " + result.error.message, "err"); return; }
-  await checkAdmin();
+  try { await connect($("repoIn").value.trim(), $("branchIn").value.trim(), $("tokenIn").value.trim()); }
+  catch (err) { say("Could not connect: " + err.message, "err"); }
 });
 
-$("signOutBtn").addEventListener("click", async function () {
-  await db.auth.signOut();
-  say("Signed out.", "ok");
-  showLogin();
+$("signOutBtn").addEventListener("click", function () {
+  writeSaved({ repo: REPO, branch: BRANCH });
+  location.reload();
 });
 
-$("compSel").addEventListener("change", function () { currentTeamId = ""; showTab(currentTab); });
+// ---------- Saving ----------
+function markSite() { dirtySite = true; updateSaveBar(); }
+function markDay(date) { dirtyDays[date] = true; updateSaveBar(); }
 
+function updateSaveBar() {
+  var count = (dirtySite ? 1 : 0) + Object.keys(dirtyDays).length;
+  $("saveInfo").textContent = count ? "Unsaved changes in " + count + " file" + (count > 1 ? "s" : "") + ". Visitors will not see them until you save." : "No unsaved changes.";
+  $("saveBtn").disabled = !count;
+}
+
+$("saveBtn").addEventListener("click", async function () {
+  try {
+    $("saveBtn").disabled = true;
+    say("Saving...", "");
+    var dates = Object.keys(dirtyDays);
+    for (var i = 0; i < dates.length; i++) {
+      var day = days[dates[i]];
+      day.sha = await ghWrite("data/" + dates[i] + ".json", toBase64(JSON.stringify(day.data, null, 1) + "\n"), day.sha, "Update matches for " + dates[i]);
+    }
+    dirtyDays = {};
+    if (dirtySite) {
+      siteSha = await ghWrite("data/site.json", toBase64(JSON.stringify(site, null, 1) + "\n"), siteSha, "Update site details");
+      dirtySite = false;
+    }
+    for (var j = 0; j < pendingDeletes.length; j++) await ghDelete(pendingDeletes[j]);
+    pendingDeletes = [];
+    updateSaveBar();
+    say("Saved. The website shows the changes within a couple of minutes.", "ok");
+  } catch (err) {
+    updateSaveBar();
+    say("Could not save: " + err.message, "err");
+  }
+});
+
+window.addEventListener("beforeunload", function (e) {
+  if (dirtySite || Object.keys(dirtyDays).length) { e.preventDefault(); e.returnValue = ""; }
+});
+
+// ---------- Tabs ----------
+$("compSel").addEventListener("change", function () { showTab(currentTab); });
 document.querySelectorAll(".tabs button").forEach(function (b) {
   b.addEventListener("click", function () { showTab(b.getAttribute("data-tab")); });
 });
 
-async function loadTeams() {
-  var result = await db.from("teams").select("*").eq("comp", comp()).order("name");
-  if (result.error) { say("Could not load teams: " + result.error.message, "err"); teams = []; return; }
-  teams = result.data;
-}
-
-async function showTab(name) {
+function showTab(name) {
   currentTab = name;
   document.querySelectorAll(".tabs button").forEach(function (b) {
     b.setAttribute("aria-pressed", String(b.getAttribute("data-tab") === name));
   });
+  $("compBar").hidden = (name === "gallery" || name === "sponsors" || name === "sundays");
   say("", "");
-  $("compBar").hidden = (name === "gallery" || name === "site" || name === "sponsors");
-  if (name !== "gallery" && name !== "site" && name !== "sponsors") await loadTeams();
+  if (name === "sundays") drawSundays();
   if (name === "teams") drawTeams();
-  if (name === "players") await drawPlayers();
-  if (name === "scores") await drawScores();
-  if (name === "gallery") await drawGallery();
-  if (name === "site") await drawSite();
-  if (name === "sponsors") await drawSponsors();
-  if (name === "rules") await drawRules();
+  if (name === "gallery") drawGallery();
+  if (name === "sponsors") drawSponsors();
+  if (name === "rules") drawRules();
+  if (name === "site") drawSite();
+  updateSaveBar();
 }
 
-// ---------- Teams ----------
-function drawTeams() {
-  var html = "<h2>Teams in " + COMP_NAMES[comp()] + "</h2>";
-  html += '<div class="box"><h3>Add a team</h3><form id="addTeamForm" class="row">';
-  html += '<label>Team name <input id="newTeamName" class="wide" required></label>';
-  html += '<label>Short code (2 to 4 letters) <input id="newTeamCode" class="small" maxlength="4" required></label>';
-  html += '<button class="gold" type="submit">Add team</button></form></div>';
-
-  html += '<div class="box"><h3>Teams</h3>';
-  if (!teams.length) html += '<p class="muted">No teams yet. Add the first one above.</p>';
-  teams.forEach(function (t) {
-    html += '<div class="item" data-id="' + t.id + '"><div class="row">';
-    html += '<label>Name <input class="wide" data-f="name" value="' + esc(t.name) + '"></label>';
-    html += '<label>Code <input class="small" data-f="code" maxlength="4" value="' + esc(t.code) + '"></label></div>';
-    html += '<p class="muted" style="margin:10px 0 4px">Table figures. Leave Pts empty to work them out from the scores. Fill them in to type the table by hand (for example last season).</p>';
-    html += '<div class="row">';
-    ["p", "w", "l", "d", "pts"].forEach(function (f) {
-      html += "<label>" + f.toUpperCase() + ' <input type="number" min="0" data-f="' + f + '" value="' + (t[f] === null ? "" : t[f]) + '"></label>';
-    });
-    html += '<label>NRR <input class="small" data-f="nrr" value="' + esc(t.nrr || "") + '"></label>';
-    html += '<button type="button" data-act="save">Save</button><button type="button" class="del" data-act="delete">Delete</button></div></div>';
-  });
-  html += "</div>";
-  $("tabBody").innerHTML = html;
-
-  $("addTeamForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    var result = await db.from("teams").insert({ comp: comp(), name: $("newTeamName").value.trim(), code: $("newTeamCode").value.trim().toUpperCase() });
-    if (result.error) { say("Could not add the team: " + result.error.message, "err"); return; }
-    await showTab("teams");
-    say("Team added.", "ok");
-  });
-
-  $("tabBody").querySelectorAll(".item").forEach(function (item) {
-    var id = item.getAttribute("data-id");
-    item.querySelector('[data-act="save"]').addEventListener("click", async function () {
-      function val(f) { return item.querySelector('[data-f="' + f + '"]').value; }
-      var row = {
-        name: val("name").trim(), code: val("code").trim().toUpperCase(),
-        p: numOrNull(val("p")), w: numOrNull(val("w")), l: numOrNull(val("l")), d: numOrNull(val("d")),
-        pts: numOrNull(val("pts")), nrr: val("nrr").trim() === "" ? null : val("nrr").trim()
-      };
-      var result = await db.from("teams").update(row).eq("id", id);
-      say(result.error ? "Could not save: " + result.error.message : "Team saved.", result.error ? "err" : "ok");
-    });
-    var delBtn = item.querySelector('[data-act="delete"]');
-    delBtn.addEventListener("click", function () {
-      armDelete(delBtn, async function () {
-        var result = await db.from("teams").delete().eq("id", id);
-        if (result.error) { say("Could not delete: " + result.error.message, "err"); return; }
-        await showTab("teams");
-        say("Team deleted, with its players and matches.", "ok");
-      });
-    });
-  });
+function teamsOf(c) { return site.teams.filter(function (t) { return t.comp === c; }); }
+function teamName(c, code) {
+  var list = teamsOf(c);
+  for (var i = 0; i < list.length; i++) { if (list[i].code === code) return list[i].name; }
+  return code;
 }
-
-// ---------- Players ----------
-async function drawPlayers() {
-  var html = "<h2>Players in " + COMP_NAMES[comp()] + "</h2>";
-  if (!teams.length) {
-    $("tabBody").innerHTML = html + '<p class="muted">Add a team first, on the Teams tab.</p>';
-    return;
-  }
-  if (!currentTeamId) currentTeamId = teams[0].id;
-  html += '<div class="box row"><label>Team <select id="teamSel">';
-  teams.forEach(function (t) { html += '<option value="' + t.id + '"' + (t.id === currentTeamId ? " selected" : "") + ">" + esc(t.name) + "</option>"; });
-  html += "</select></label></div>";
-
-  var result = await db.from("players").select("*").eq("team_id", currentTeamId).order("shirt_no", { nullsFirst: false });
-  var players = result.data || [];
-
-  html += '<div class="box"><h3>Add a player</h3><form id="addPlayerForm" class="row">';
-  html += '<label>Name <input id="newPlayerName" class="wide" required></label>';
-  html += '<label>Role <input id="newPlayerRole" class="small" placeholder="Batter"></label>';
-  html += '<label>Shirt no. <input id="newPlayerNo" type="number" min="0"></label>';
-  html += '<button class="gold" type="submit">Add player</button></form>';
-  html += '<p class="muted" style="margin-bottom:0">For junior players, only add names that parents have agreed to show on the public website.</p></div>';
-
-  html += '<div class="box"><h3>Squad (' + players.length + ")</h3>";
-  if (!players.length) html += '<p class="muted">No players yet.</p>';
-  players.forEach(function (p) {
-    html += '<div class="item row" data-id="' + p.id + '"><label>Name <input class="wide" data-f="name" value="' + esc(p.name) + '"></label><label>Role <input class="small" data-f="role" value="' + esc(p.role || "") + '"></label><label>No. <input type="number" min="0" data-f="shirt_no" value="' + (p.shirt_no === null ? "" : p.shirt_no) + '"></label><div style="flex-basis:100%" class="row">' + [["sixes", "Sixes"], ["fours", "Fours"], ["twos", "Twos"], ["ones", "Singles"], ["run_outs", "Run outs"]].map(function (f) { return "<label>" + f[1] + ' <input type="number" min="0" data-f="' + f[0] + '" value="' + (p[f[0]] || 0) + '"></label>'; }).join("") + '</div><button type="button" data-act="save">Save</button><button type="button" class="del">Delete</button></div>';
-  });
-  html += "</div>";
-  $("tabBody").innerHTML = html;
-
-  $("teamSel").addEventListener("change", function () { currentTeamId = $("teamSel").value; drawPlayers(); });
-  $("addPlayerForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    var row = { team_id: currentTeamId, name: $("newPlayerName").value.trim(), role: $("newPlayerRole").value.trim() || null, shirt_no: numOrNull($("newPlayerNo").value) };
-    var res = await db.from("players").insert(row);
-    if (res.error) { say("Could not add the player: " + res.error.message, "err"); return; }
-    await drawPlayers();
-    say("Player added.", "ok");
-  });
-  $("tabBody").querySelectorAll(".item").forEach(function (item) {
-    item.querySelector('[data-act="save"]').addEventListener("click", async function () {
-      function val(f) { return item.querySelector('[data-f="' + f + '"]').value; }
-      var row = { name: val("name").trim(), role: val("role").trim() || null, shirt_no: numOrNull(val("shirt_no")), sixes: Number(val("sixes") || 0), fours: Number(val("fours") || 0), twos: Number(val("twos") || 0), ones: Number(val("ones") || 0), run_outs: Number(val("run_outs") || 0) };
-      var res = await db.from("players").update(row).eq("id", item.getAttribute("data-id"));
-      say(res.error ? "Could not save: " + res.error.message : "Player saved.", res.error ? "err" : "ok");
-    });
-    var btn = item.querySelector(".del");
-    btn.addEventListener("click", function () {
-      armDelete(btn, async function () {
-        var res = await db.from("players").delete().eq("id", item.getAttribute("data-id"));
-        if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
-        await drawPlayers();
-        say("Player deleted.", "ok");
-      });
-    });
-  });
+function teamOptions(c, selected) {
+  return teamsOf(c).map(function (t) { return '<option value="' + esc(t.code) + '"' + (t.code === selected ? " selected" : "") + ">" + esc(t.name) + "</option>"; }).join("");
 }
-
-// ---------- Scores ----------
-function teamOptions(selectedId) {
-  var out = "";
-  teams.forEach(function (t) { out += '<option value="' + t.id + '"' + (t.id === selectedId ? " selected" : "") + ">" + esc(t.name) + "</option>"; });
+function compOptions(selected, allLabel) {
+  var out = allLabel ? '<option value="">' + allLabel + "</option>" : "";
+  Object.keys(COMP_NAMES).forEach(function (k) { out += '<option value="' + k + '"' + (k === selected ? " selected" : "") + ">" + COMP_NAMES[k] + "</option>"; });
   return out;
 }
 
-function teamNameById(id) {
-  for (var i = 0; i < teams.length; i++) { if (teams[i].id === id) return teams[i].name; }
-  return "?";
-}
+// ---------- Matches (one file per day) ----------
+function drawSundays() {
+  var dates = Object.keys(days).sort();
+  var html = "<h2>Matches and scores</h2>";
+  html += '<div class="box"><div class="row"><label>Match day <select id="daySel">';
+  dates.forEach(function (d) { html += '<option value="' + d + '"' + (d === currentDate ? " selected" : "") + ">" + d + "</option>"; });
+  html += '</select></label><label>Add a new match day <input id="newDay" type="date"></label><button id="addDayBtn" type="button">Add day</button></div></div>';
 
-async function drawScores() {
-  var html = "<h2>Matches and scores in " + COMP_NAMES[comp()] + "</h2>";
-  if (teams.length < 2) {
-    $("tabBody").innerHTML = html + '<p class="muted">Add at least two teams first, on the Teams tab.</p>';
+  if (!currentDate || !days[currentDate]) {
+    $("tabBody").innerHTML = html + '<p class="muted">Add a match day to start.</p>';
+    wireDayPicker();
     return;
   }
-  var options = "";
-  teams.forEach(function (t) { options += '<option value="' + t.id + '">' + esc(t.name) + "</option>"; });
+  var day = days[currentDate].data;
+  html += '<div class="box"><h3>Add a match on ' + currentDate + '</h3><form id="addMatchForm" class="row">';
+  html += '<label>Section <select id="mComp">' + compOptions("juniors", "") + "</select></label>";
+  html += '<label>Home <select id="mHome"></select></label><label>Away <select id="mAway"></select></label>';
+  html += '<label>Start time <input id="mTime" type="time" value="15:30" required></label><button class="gold" type="submit">Add match</button></form></div>';
 
-  html += '<div class="box"><h3>Add a match</h3><form id="addMatchForm" class="row">';
-  html += '<label>Home <select id="mHome">' + options + "</select></label>";
-  html += '<label>Away <select id="mAway">' + options + "</select></label>";
-  html += '<label>Date <input id="mDate" type="date" required></label>';
-  html += '<label>Time <input id="mTime" type="time" value="10:00" required></label>';
-  html += '<button class="gold" type="submit">Add match</button></form></div>';
+  if (!day.matches.length) html += '<p class="muted">No matches on this day yet.</p>';
+  day.matches.forEach(function (m, i) {
+    html += '<div class="box" data-i="' + i + '"><b>' + esc(teamName(m.comp, m.home)) + "</b> v <b>" + esc(teamName(m.comp, m.away)) + '</b> <span class="muted">' + COMP_NAMES[m.comp] + "</span>";
+    html += '<div class="row" style="margin-top:8px"><label>Start time <input type="time" data-f="time" value="' + esc(m.time) + '"></label></div>';
+    html += '<div class="score"><span class="muted">' + esc(m.home) + '</span><input type="number" min="0" data-f="hr" placeholder="runs" value="' + (m.hr === null ? "" : m.hr) + '"><span>/</span><input type="number" min="0" max="10" data-f="hw" placeholder="wkts" value="' + (m.hw === null ? "" : m.hw) + '"></div>';
+    html += '<div class="score"><span class="muted">' + esc(m.away) + '</span><input type="number" min="0" data-f="ar" placeholder="runs" value="' + (m.ar === null ? "" : m.ar) + '"><span>/</span><input type="number" min="0" max="10" data-f="aw" placeholder="wkts" value="' + (m.aw === null ? "" : m.aw) + '"></div>';
+    html += '<div class="score"><span class="muted">Bonus points, winning team only</span><label>Home <input type="number" min="0" max="4" data-f="hb" value="' + (m.hb || 0) + '"></label><label>Away <input type="number" min="0" max="4" data-f="ab" value="' + (m.ab || 0) + '"></label></div>';
 
-  var result = await db.from("matches").select("*").eq("comp", comp()).order("match_date").order("match_time");
-  var matches = result.data || [];
-
-  html += '<div class="box"><h3>Matches (' + matches.length + ")</h3>";
-  if (!matches.length) html += '<p class="muted">No matches yet.</p>';
-  matches.forEach(function (m) {
-    html += '<div class="item" data-id="' + m.id + '"><div class="row">';
-    html += '<label>Home <select data-f="home_team">' + teamOptions(m.home_team) + "</select></label>";
-    html += '<label>Away <select data-f="away_team">' + teamOptions(m.away_team) + "</select></label>";
-    html += '<label>Date <input type="date" data-f="match_date" value="' + m.match_date + '"></label>';
-    html += '<label>Time <input type="time" data-f="match_time" value="' + esc(m.match_time) + '"></label>';
-    html += '<button type="button" data-act="details">Save details</button></div>';
-    html += '<span class="muted">' + (m.status === "played" ? "Played" : "Upcoming") + "</span>";
-    html += '<div class="score"><span class="v">' + esc(teamNameById(m.home_team)) + '</span><input type="number" min="0" data-f="home_runs" placeholder="runs" value="' + (m.home_runs === null ? "" : m.home_runs) + '"><span>/</span><input type="number" min="0" max="10" data-f="home_wkts" placeholder="wkts" value="' + (m.home_wkts === null ? "" : m.home_wkts) + '"></div>';
-    html += '<div class="score"><span class="v">' + esc(teamNameById(m.away_team)) + '</span><input type="number" min="0" data-f="away_runs" placeholder="runs" value="' + (m.away_runs === null ? "" : m.away_runs) + '"><span>/</span><input type="number" min="0" max="10" data-f="away_wkts" placeholder="wkts" value="' + (m.away_wkts === null ? "" : m.away_wkts) + '"></div>';
-    html += '<div class="score"><span class="v">Bonus points (winning team only)</span><label>Home <input type="number" min="0" max="4" data-f="home_bonus" value="' + (m.home_bonus || 0) + '"></label><label>Away <input type="number" min="0" max="4" data-f="away_bonus" value="' + (m.away_bonus || 0) + '"></label></div>';
-    html += '<div class="row"><button type="button" class="gold" data-act="save">Save score</button><button type="button" data-act="clear">Clear score</button><button type="button" class="del" data-act="delete">Delete</button></div></div>';
+    html += "<details><summary>Player shots and run outs</summary>";
+    [m.home, m.away].forEach(function (code) {
+      var team = teamsOf(m.comp).filter(function (t) { return t.code === code; })[0];
+      html += '<p class="muted" style="margin:8px 0 0">' + esc(team ? team.name : code) + "</p>";
+      var players = team ? (team.players || []) : [];
+      if (!players.length) html += '<p class="muted" style="margin:0">No players yet. Add them on the Teams tab.</p>';
+      players.forEach(function (p) {
+        var st = findStat(m, code, p.name, false);
+        html += '<div class="stat-row" data-team="' + esc(code) + '" data-player="' + esc(p.name) + '"><span class="nm">' + esc(p.name) + "</span>";
+        [["sixes", "6s"], ["fours", "4s"], ["twos", "2s"], ["ones", "1s"], ["run_outs", "RO"]].forEach(function (f) {
+          html += "<label>" + f[1] + ' <input type="number" min="0" data-s="' + f[0] + '" value="' + (st ? st[f[0]] || 0 : 0) + '"></label>';
+        });
+        html += "</div>";
+      });
+    });
+    html += "</details>";
+    html += '<div class="row" style="margin-top:10px"><button type="button" data-act="clear">Clear score</button><button type="button" class="del" data-act="delete">Delete</button></div></div>';
   });
-  html += "</div>";
+  $("tabBody").innerHTML = html;
+  wireDayPicker();
+
+  function fillTeams() {
+    $("mHome").innerHTML = teamOptions($("mComp").value, "");
+    $("mAway").innerHTML = teamOptions($("mComp").value, "");
+    if ($("mAway").options.length > 1) $("mAway").selectedIndex = 1;
+  }
+  $("mComp").addEventListener("change", fillTeams);
+  fillTeams();
+  $("addMatchForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!$("mHome").value || !$("mAway").value) { say("Add teams to this section first.", "err"); return; }
+    if ($("mHome").value === $("mAway").value) { say("Pick two different teams.", "err"); return; }
+    day.matches.push({ comp: $("mComp").value, time: $("mTime").value, home: $("mHome").value, away: $("mAway").value, hr: null, hw: null, ar: null, aw: null, hb: 0, ab: 0, stats: [] });
+    markDay(currentDate);
+    drawSundays();
+    say("Match added. Press Save to website when you are done.", "ok");
+  });
+
+  $("tabBody").querySelectorAll(".box[data-i]").forEach(function (box) {
+    var m = day.matches[Number(box.getAttribute("data-i"))];
+    box.querySelectorAll("[data-f]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        var f = input.getAttribute("data-f");
+        if (f === "time") m.time = input.value;
+        else if (f === "hb" || f === "ab") m[f] = num(input.value);
+        else m[f] = numOrNull(input.value);
+        markDay(currentDate);
+      });
+    });
+    box.querySelectorAll(".stat-row").forEach(function (row) {
+      row.querySelectorAll("[data-s]").forEach(function (input) {
+        input.addEventListener("change", function () {
+          var st = findStat(m, row.getAttribute("data-team"), row.getAttribute("data-player"), true);
+          st[input.getAttribute("data-s")] = num(input.value);
+          markDay(currentDate);
+        });
+      });
+    });
+    box.querySelector('[data-act="clear"]').addEventListener("click", function () {
+      m.hr = null; m.hw = null; m.ar = null; m.aw = null; m.hb = 0; m.ab = 0; m.stats = [];
+      markDay(currentDate);
+      drawSundays();
+    });
+    var del = box.querySelector('[data-act="delete"]');
+    del.addEventListener("click", function () {
+      armDelete(del, function () {
+        day.matches.splice(Number(box.getAttribute("data-i")), 1);
+        markDay(currentDate);
+        drawSundays();
+      });
+    });
+  });
+}
+
+// Finds (or creates, when make is true) the stat line for one player in one match
+function findStat(m, team, player, make) {
+  m.stats = m.stats || [];
+  for (var i = 0; i < m.stats.length; i++) {
+    if (m.stats[i].team === team && m.stats[i].player === player) return m.stats[i];
+  }
+  if (!make) return null;
+  var st = { team: team, player: player, sixes: 0, fours: 0, twos: 0, ones: 0, run_outs: 0 };
+  m.stats.push(st);
+  return st;
+}
+
+function wireDayPicker() {
+  if ($("daySel")) $("daySel").addEventListener("change", function () { currentDate = $("daySel").value; drawSundays(); });
+  $("addDayBtn").addEventListener("click", function () {
+    var d = $("newDay").value;
+    if (!d) { say("Pick a date first.", "err"); return; }
+    if (!days[d]) {
+      days[d] = { data: { date: d, matches: [] }, sha: "" };
+      site.sundays.push(d);
+      site.sundays.sort();
+      markSite();
+      markDay(d);
+    }
+    currentDate = d;
+    drawSundays();
+  });
+}
+
+// ---------- Teams and players ----------
+function drawTeams() {
+  var c = comp();
+  var list = teamsOf(c);
+  var html = "<h2>Teams in " + COMP_NAMES[c] + "</h2>";
+  html += '<div class="box"><h3>Add a team</h3><form id="addTeamForm" class="row"><label>Team name <input id="newTeamName" class="wide" required></label><label>Short code (2 to 4 letters) <input id="newTeamCode" class="small" maxlength="4" required></label><button class="gold" type="submit">Add team</button></form></div>';
+  if (!list.length) html += '<p class="muted">No teams yet.</p>';
+  list.forEach(function (t) {
+    html += '<div class="box" data-code="' + esc(t.code) + '"><div class="row"><label>Name <input class="wide" data-f="name" value="' + esc(t.name) + '"></label><span class="muted">Code ' + esc(t.code) + '</span></div>';
+    html += '<details><summary>Typed table figures (optional)</summary><p class="muted" style="margin:0 0 6px">Leave Pts empty to work the table out from the scores. Fill it in to type the table by hand, for example for a finished season.</p><div class="row">';
+    ["p", "w", "l", "d", "pts"].forEach(function (f) { html += "<label>" + f.toUpperCase() + ' <input type="number" min="0" data-f="' + f + '" value="' + (t[f] === undefined || t[f] === null ? "" : t[f]) + '"></label>'; });
+    html += '<label>NRR <input class="small" data-f="nrr" value="' + esc(t.nrr || "") + '"></label></div></details>';
+    html += "<details open><summary>Players (" + (t.players || []).length + ")</summary>";
+    (t.players || []).forEach(function (p, i) {
+      html += '<div class="stat-row" data-p="' + i + '"><input class="wide" data-pf="name" value="' + esc(p.name) + '"><input class="small" data-pf="role" placeholder="Role" value="' + esc(p.role || "") + '"><input type="number" min="0" data-pf="no" placeholder="No." value="' + (p.no || "") + '"><button type="button" class="del">Delete</button></div>';
+    });
+    html += '<form class="row addPlayer" style="margin-top:8px"><label>Name <input class="wide" data-n="name" required></label><label>Role <input class="small" data-n="role"></label><label>Shirt no. <input type="number" min="0" data-n="no"></label><button type="submit">Add player</button></form>';
+    html += '<p class="muted" style="margin-bottom:0">For junior players, only add names that parents have agreed to show on the public website. If you rename a player, shots already entered under the old name are no longer counted.</p></details>';
+    html += '<div class="row" style="margin-top:10px"><button type="button" class="del" data-act="delete">Delete</button></div></div>';
+  });
   $("tabBody").innerHTML = html;
 
-  $("addMatchForm").addEventListener("submit", async function (e) {
+  $("addTeamForm").addEventListener("submit", function (e) {
     e.preventDefault();
-    if ($("mHome").value === $("mAway").value) { say("Pick two different teams.", "err"); return; }
-    var row = { comp: comp(), home_team: $("mHome").value, away_team: $("mAway").value, match_date: $("mDate").value, match_time: $("mTime").value };
-    var res = await db.from("matches").insert(row);
-    if (res.error) { say("Could not add the match: " + res.error.message, "err"); return; }
-    await drawScores();
-    say("Match added.", "ok");
+    var code = $("newTeamCode").value.trim().toUpperCase();
+    if (teamsOf(c).some(function (t) { return t.code === code; })) { say("That code is already used in this section.", "err"); return; }
+    site.teams.push({ comp: c, code: code, name: $("newTeamName").value.trim(), players: [] });
+    markSite(); drawTeams(); say("Team added. Press Save to website when you are done.", "ok");
   });
 
-  $("tabBody").querySelectorAll(".item").forEach(function (item) {
-    var id = item.getAttribute("data-id");
-    function val(f) { return item.querySelector('[data-f="' + f + '"]').value; }
-
-    item.querySelector('[data-act="save"]').addEventListener("click", async function () {
-      if (val("home_runs") === "" || val("away_runs") === "") { say("Enter the runs for both teams.", "err"); return; }
-      var row = {
-        home_runs: Number(val("home_runs")), home_wkts: Number(val("home_wkts") || 0),
-        away_runs: Number(val("away_runs")), away_wkts: Number(val("away_wkts") || 0),
-        home_bonus: Number(val("home_bonus") || 0), away_bonus: Number(val("away_bonus") || 0),
-        status: "played"
-      };
-      var res = await db.from("matches").update(row).eq("id", id);
-      if (res.error) { say("Could not save the score: " + res.error.message, "err"); return; }
-      await drawScores();
-      say("Score saved. The table updates by itself.", "ok");
+  $("tabBody").querySelectorAll(".box[data-code]").forEach(function (box) {
+    var team = teamsOf(c).filter(function (t) { return t.code === box.getAttribute("data-code"); })[0];
+    box.querySelectorAll("[data-f]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        var f = input.getAttribute("data-f");
+        if (f === "name") team.name = input.value.trim();
+        else if (f === "nrr") { if (input.value.trim() === "") delete team.nrr; else team.nrr = input.value.trim(); }
+        else { if (input.value === "") delete team[f]; else team[f] = Number(input.value); }
+        markSite();
+      });
     });
-
-    item.querySelector('[data-act="details"]').addEventListener("click", async function () {
-      if (val("home_team") === val("away_team")) { say("Pick two different teams.", "err"); return; }
-      var row = { home_team: val("home_team"), away_team: val("away_team"), match_date: val("match_date"), match_time: val("match_time") };
-      var res = await db.from("matches").update(row).eq("id", id);
-      if (res.error) { say("Could not save: " + res.error.message, "err"); return; }
-      await drawScores();
-      say("Match details saved.", "ok");
+    box.querySelectorAll(".stat-row[data-p]").forEach(function (row) {
+      var p = team.players[Number(row.getAttribute("data-p"))];
+      row.querySelectorAll("[data-pf]").forEach(function (input) {
+        input.addEventListener("change", function () {
+          var f = input.getAttribute("data-pf");
+          if (f === "no") p.no = numOrNull(input.value);
+          else p[f] = input.value.trim();
+          markSite();
+        });
+      });
+      var del = row.querySelector(".del");
+      del.addEventListener("click", function () {
+        armDelete(del, function () { team.players.splice(Number(row.getAttribute("data-p")), 1); markSite(); drawTeams(); });
+      });
     });
-
-    item.querySelector('[data-act="clear"]').addEventListener("click", async function () {
-      var row = { home_runs: null, home_wkts: null, away_runs: null, away_wkts: null, home_bonus: 0, away_bonus: 0, status: "upcoming" };
-      var res = await db.from("matches").update(row).eq("id", id);
-      if (res.error) { say("Could not clear the score: " + res.error.message, "err"); return; }
-      await drawScores();
-      say("Score cleared. The match is upcoming again.", "ok");
+    box.querySelector(".addPlayer").addEventListener("submit", function (e) {
+      e.preventDefault();
+      function nv(f) { return box.querySelector('.addPlayer [data-n="' + f + '"]').value.trim(); }
+      team.players = team.players || [];
+      team.players.push({ name: nv("name"), role: nv("role"), no: numOrNull(nv("no")) });
+      markSite(); drawTeams(); say("Player added. Press Save to website when you are done.", "ok");
     });
-
-    var delBtn = item.querySelector('[data-act="delete"]');
-    delBtn.addEventListener("click", function () {
-      armDelete(delBtn, async function () {
-        var res = await db.from("matches").delete().eq("id", id);
-        if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
-        await drawScores();
-        say("Match deleted.", "ok");
+    var del = box.querySelector('[data-act="delete"]');
+    del.addEventListener("click", function () {
+      armDelete(del, function () {
+        site.teams = site.teams.filter(function (t) { return t !== team; });
+        // Remove the team's matches from every loaded day
+        Object.keys(days).forEach(function (d) {
+          var before = days[d].data.matches.length;
+          days[d].data.matches = days[d].data.matches.filter(function (m) { return !(m.comp === c && (m.home === team.code || m.away === team.code)); });
+          if (days[d].data.matches.length !== before) markDay(d);
+        });
+        markSite(); drawTeams(); say("Team deleted, with its matches.", "ok");
       });
     });
   });
 }
 
 // ---------- Gallery ----------
-// Makes a photo smaller before upload so the site stays fast
 async function shrinkImage(file) {
-  var maxSide = 1600;
   var bitmap = await createImageBitmap(file);
-  var scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  var scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
   var canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
@@ -445,25 +544,33 @@ async function shrinkImage(file) {
   return new Promise(function (resolve) { canvas.toBlob(resolve, "image/jpeg", 0.85); });
 }
 
-async function drawGallery() {
-  var html = "<h2>Gallery</h2>";
-  html += '<div class="box"><h3>Upload photos and videos</h3><form id="uploadForm" class="row">';
-  html += '<label>Files <input id="upFiles" type="file" accept="image/*,video/mp4,video/quicktime,video/webm" multiple required></label>';
-  html += '<label>Caption (optional) <input id="upTitle" class="wide"></label>';
-  html += '<label>Section <select id="upComp"><option value="">All sections</option><option value="adults">Indoor Adults</option><option value="seniors">Indoor Seniors</option><option value="juniors">Indoor Juniors</option><option value="outdoor">Outdoor 2026</option></select></label>';
-  html += '<button class="gold" type="submit">Upload</button></form>';
-  html += '<p class="muted" style="margin-bottom:0">Photos are resized automatically. Videos can be up to 50 MB each. For junior players, only upload photos that parents have agreed to.</p></div>';
+// Uploads one picture or video into a folder of the repo right away. Returns the file path.
+async function uploadFile(file, folder) {
+  var isVideo = file.type.indexOf("video/") === 0;
+  var body = file, ext = file.name.split(".").pop().toLowerCase();
+  if (!isVideo && ext !== "svg") {
+    try { body = await shrinkImage(file); ext = "jpg"; } catch (err) { body = file; }
+  }
+  if (body.size > 25 * 1024 * 1024) throw new Error(file.name + " is over 25 MB. Use a shorter video or link to YouTube.");
+  var path = folder + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 7) + "." + ext;
+  await ghWrite(path, await blobToBase64(body), "", "Add " + path);
+  return path;
+}
 
-  var result = await db.from("gallery").select("*").order("created_at", { ascending: false });
-  var items = result.data || [];
-  html += '<div class="box"><h3>Uploaded (' + items.length + ")</h3>";
-  if (!items.length) html += '<p class="muted">Nothing uploaded yet.</p>';
+function previewUrl(path) { return "https://raw.githubusercontent.com/" + REPO + "/" + BRANCH + "/" + path; }
+
+function drawGallery() {
+  site.gallery = site.gallery || [];
+  var html = "<h2>Gallery</h2>";
+  html += '<div class="box"><h3>Upload photos and videos</h3><form id="uploadForm" class="row"><label>Files <input id="upFiles" type="file" accept="image/*,video/mp4,video/quicktime,video/webm" multiple required></label>';
+  html += '<label>Caption (optional) <input id="upTitle" class="wide"></label><label>Section <select id="upComp">' + compOptions("", "All sections") + '</select></label><button class="gold" type="submit">Upload</button></form>';
+  html += '<p class="muted" style="margin-bottom:0">Photos are resized automatically. Videos up to 25 MB. For junior players, only upload photos that parents have agreed to.</p></div>';
+  html += '<div class="box"><h3>Uploaded (' + site.gallery.length + ')</h3>';
+  if (!site.gallery.length) html += '<p class="muted">Nothing uploaded yet.</p>';
   html += '<div class="thumbs">';
-  items.forEach(function (g) {
-    var url = db.storage.from("gallery").getPublicUrl(g.path).data.publicUrl;
-    html += '<figure data-id="' + g.id + '" data-path="' + esc(g.path) + '">';
-    html += g.kind === "video" ? '<video src="' + url + '#t=0.1" preload="metadata" controls playsinline></video>' : '<img loading="lazy" src="' + url + '" alt="">';
-    html += '<input data-f="title" placeholder="Caption" value="' + esc(g.title || "") + '"><figcaption>' + (g.comp ? COMP_NAMES[g.comp] : "All sections") + '</figcaption><button type="button" data-act="save">Save caption</button><button type="button" class="del">Delete</button></figure>';
+  site.gallery.forEach(function (g, i) {
+    html += '<figure data-i="' + i + '">' + (g.kind === "video" ? '<video src="' + previewUrl(esc(g.file)) + '" preload="metadata" controls playsinline></video>' : '<img loading="lazy" src="' + previewUrl(esc(g.file)) + '" alt="">');
+    html += '<input data-f="title" placeholder="Caption" value="' + esc(g.title || "") + '"><figcaption>' + (g.comp ? COMP_NAMES[g.comp] : "All sections") + '</figcaption><button type="button" class="del">Delete</button></figure>';
   });
   html += "</div></div>";
   $("tabBody").innerHTML = html;
@@ -473,112 +580,50 @@ async function drawGallery() {
     var files = $("upFiles").files;
     var done = 0;
     for (var i = 0; i < files.length; i++) {
-      var file = files[i];
-      say("Uploading " + (i + 1) + " of " + files.length + "...", "");
-      var isVideo = file.type.indexOf("video/") === 0;
-      var body = file;
-      var contentType = file.type;
-      var ext = file.name.split(".").pop().toLowerCase();
-      if (!isVideo) {
-        try { body = await shrinkImage(file); contentType = "image/jpeg"; ext = "jpg"; }
-        catch (err) { body = file; }
-      }
-      if (body.size > 52428800) { say(file.name + " is over 50 MB. Skipped.", "err"); continue; }
-      var path = (comp() || "all") + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
-      var up = await db.storage.from("gallery").upload(path, body, { contentType: contentType });
-      if (up.error) { say("Upload failed for " + file.name + ": " + up.error.message, "err"); return; }
-      var row = { comp: $("upComp").value || null, title: $("upTitle").value.trim(), kind: isVideo ? "video" : "image", path: path };
-      var ins = await db.from("gallery").insert(row);
-      if (ins.error) { say("Saved the file but not its details: " + ins.error.message, "err"); return; }
-      done += 1;
+      try {
+        say("Uploading " + (i + 1) + " of " + files.length + "...", "");
+        var path = await uploadFile(files[i], "gallery");
+        site.gallery.unshift({ comp: $("upComp").value || null, title: $("upTitle").value.trim(), kind: files[i].type.indexOf("video/") === 0 ? "video" : "image", file: path, date: new Date().toISOString().slice(0, 10) });
+        done += 1;
+      } catch (err) { say(err.message, "err"); break; }
     }
-    await drawGallery();
-    say(done + " file(s) uploaded.", "ok");
+    if (done) markSite();
+    drawGallery();
+    if (done) say(done + " file(s) uploaded. Press Save to website to show them.", "ok");
   });
 
   $("tabBody").querySelectorAll("figure").forEach(function (fig) {
-    fig.querySelector('[data-act="save"]').addEventListener("click", async function () {
-      var res = await db.from("gallery").update({ title: fig.querySelector('[data-f="title"]').value.trim() }).eq("id", fig.getAttribute("data-id"));
-      say(res.error ? "Could not save: " + res.error.message : "Caption saved.", res.error ? "err" : "ok");
-    });
-    var btn = fig.querySelector(".del");
-    btn.addEventListener("click", function () {
-      armDelete(btn, async function () {
-        await db.storage.from("gallery").remove([fig.getAttribute("data-path")]);
-        var res = await db.from("gallery").delete().eq("id", fig.getAttribute("data-id"));
-        if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
-        await drawGallery();
-        say("Deleted.", "ok");
+    var g = site.gallery[Number(fig.getAttribute("data-i"))];
+    fig.querySelector("[data-f]").addEventListener("change", function (e) { g.title = e.target.value.trim(); markSite(); });
+    var del = fig.querySelector(".del");
+    del.addEventListener("click", function () {
+      armDelete(del, function () {
+        pendingDeletes.push(g.file);
+        site.gallery.splice(Number(fig.getAttribute("data-i")), 1);
+        markSite(); drawGallery();
       });
     });
   });
 }
 
 // ---------- Sponsors ----------
-function fileUrl(path) { return db.storage.from("gallery").getPublicUrl(path).data.publicUrl; }
-
-// Uploads one image (resized) to the bucket under sponsors/ and returns its path
-async function uploadSponsorImage(file) {
-  var body = file, contentType = file.type, ext = file.name.split(".").pop().toLowerCase();
-  if (ext !== "svg") {
-    try {
-      var bitmap = await createImageBitmap(file);
-      var scale = Math.min(1, 800 / Math.max(bitmap.width, bitmap.height));
-      var canvas = document.createElement("canvas");
-      canvas.width = Math.round(bitmap.width * scale);
-      canvas.height = Math.round(bitmap.height * scale);
-      canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      // PNG keeps transparent logos clean
-      body = await new Promise(function (resolve) { canvas.toBlob(resolve, "image/png"); });
-      contentType = "image/png"; ext = "png";
-    } catch (err) { body = file; }
-  }
-  var path = "sponsors/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
-  var up = await db.storage.from("gallery").upload(path, body, { contentType: contentType });
-  if (up.error) throw new Error(up.error.message);
-  return path;
-}
-
-async function drawSponsors() {
-  var sp = await db.from("sponsors").select("*").order("sort_no").order("created_at");
-  var br = await db.from("sponsor_brands").select("*").order("created_at");
-  var sponsors = sp.data || [];
-  var brands = br.data || [];
-
+function drawSponsors() {
+  site.sponsors = site.sponsors || [];
   var html = "<h2>Sponsors</h2>";
-  html += '<div class="box"><h3>Add a sponsor</h3><form id="addSponsorForm" style="display:grid;gap:10px">';
-  html += '<div class="row"><label>Sponsor name <input id="spName" class="wide" required></label>';
-  html += '<label>Event <select id="spComp"><option value="">All events</option><option value="adults">Indoor Adults</option><option value="seniors">Indoor Seniors</option><option value="juniors">Indoor Juniors</option><option value="outdoor">Outdoor 2026</option></select></label>';
-  html += '<label>Main sponsor? <select id="spMain"><option value="no">No</option><option value="yes">Yes, highlight first</option></select></label></div>';
-  html += '<label>Short description <input id="spBlurb"></label>';
-  html += '<label>Website (starting https://) <input id="spSite" type="url"></label>';
-  html += '<label>Logo <input id="spLogo" type="file" accept="image/*"></label>';
-  html += '<div><button class="gold" type="submit">Add sponsor</button></div></form></div>';
-
-  if (!sponsors.length) html += '<p class="muted">No sponsors yet.</p>';
-  sponsors.forEach(function (s) {
-    var mine = brands.filter(function (b) { return b.sponsor_id === s.id; });
-    html += '<div class="box" data-id="' + s.id + '"><div class="row">';
-    if (s.logo_path) html += '<img src="' + fileUrl(s.logo_path) + '" alt="" style="width:64px;height:64px;object-fit:contain;background:#fff;padding:4px">';
-    html += '<label>Name <input class="wide" data-f="name" value="' + esc(s.name) + '"></label>';
-    html += '<label>Event <select data-f="comp">';
-    [["", "All events"], ["adults", "Indoor Adults"], ["seniors", "Indoor Seniors"], ["juniors", "Indoor Juniors"], ["outdoor", "Outdoor 2026"]].forEach(function (o) {
-      html += '<option value="' + o[0] + '"' + ((s.comp || "") === o[0] ? " selected" : "") + ">" + o[1] + "</option>";
+  html += '<div class="box"><h3>Add a sponsor</h3><form id="addSponsorForm" style="display:grid;gap:10px"><div class="row"><label>Sponsor name <input id="spName" class="wide" required></label>';
+  html += '<label>Event <select id="spComp">' + compOptions("", "All events") + '</select></label><label>Main sponsor? <select id="spMain"><option value="no">No</option><option value="yes">Yes, show first</option></select></label></div>';
+  html += '<label>Short description <input id="spBlurb"></label><label>Website (starting https://) <input id="spSite" type="url"></label><label>Logo <input id="spLogo" type="file" accept="image/*"></label><div><button class="gold" type="submit">Add sponsor</button></div></form></div>';
+  site.sponsors.forEach(function (s, i) {
+    html += '<div class="box" data-i="' + i + '"><div class="row">' + (s.logo ? '<img src="' + previewUrl(esc(s.logo)) + '" alt="" style="width:64px;height:64px;object-fit:contain;background:#fff;padding:4px">' : "");
+    html += '<label>Name <input class="wide" data-f="name" value="' + esc(s.name) + '"></label><label>Event <select data-f="comp">' + compOptions(s.comp || "", "All events") + '</select></label>';
+    html += '<label>Main <select data-f="main"><option value="no"' + (s.main ? "" : " selected") + '>No</option><option value="yes"' + (s.main ? " selected" : "") + ">Yes</option></select></label></div>";
+    html += '<div style="display:grid;gap:8px;margin-top:8px"><label>Description <input data-f="blurb" value="' + esc(s.blurb || "") + '"></label><label>Website <input data-f="website" value="' + esc(s.website || "") + '"></label><label>Replace logo <input data-f="logo" type="file" accept="image/*"></label></div>';
+    html += '<h3 style="margin-top:14px">Brands (' + (s.brands || []).length + ")</h3>";
+    (s.brands || []).forEach(function (b, j) {
+      html += '<div class="item row" data-b="' + j + '">' + (b.image ? '<img src="' + previewUrl(esc(b.image)) + '" alt="" style="width:48px;height:48px;object-fit:contain;background:#fff;padding:3px">' : "") + '<span style="flex:1 1 140px">' + esc(b.name) + '</span><button type="button" class="del">Delete</button></div>';
     });
-    html += '</select></label><label>Main <select data-f="main"><option value="no"' + (s.main ? "" : " selected") + '>No</option><option value="yes"' + (s.main ? " selected" : "") + ">Yes</option></select></label></div>";
-    html += '<div style="display:grid;gap:8px;margin-top:8px"><label>Description <input data-f="blurb" value="' + esc(s.blurb) + '"></label>';
-    html += '<label>Website <input data-f="website" value="' + esc(s.website) + '"></label>';
-    html += '<label>Replace logo <input data-f="logo" type="file" accept="image/*"></label></div>';
-    html += '<div class="row" style="margin-top:10px"><button type="button" class="gold" data-act="save">Save sponsor</button><button type="button" class="del" data-act="delete">Delete</button></div>';
-
-    html += '<h3 style="margin-top:16px">Brands (' + mine.length + ")</h3>";
-    mine.forEach(function (b) {
-      html += '<div class="item row" data-brand="' + b.id + '" data-path="' + esc(b.image_path || "") + '">';
-      if (b.image_path) html += '<img src="' + fileUrl(b.image_path) + '" alt="" style="width:48px;height:48px;object-fit:contain;background:#fff;padding:3px">';
-      html += '<span style="flex:1 1 140px">' + esc(b.name) + '</span><button type="button" class="del">Delete</button></div>';
-    });
-    html += '<form class="row brandForm" style="margin-top:8px"><label>Brand name <input data-b="name" required></label><label>Brand image <input data-b="img" type="file" accept="image/*"></label><label>Website <input data-b="site" type="url"></label><button type="submit">Add brand</button></form>';
-    html += "</div>";
+    html += '<form class="row brandForm" style="margin-top:8px"><label>Brand name <input data-n="name" required></label><label>Brand image <input data-n="img" type="file" accept="image/*"></label><label>Website <input data-n="site" type="url"></label><button type="submit">Add brand</button></form>';
+    html += '<div class="row" style="margin-top:10px"><button type="button" class="del" data-act="delete">Delete</button></div></div>';
   });
   $("tabBody").innerHTML = html;
 
@@ -587,179 +632,133 @@ async function drawSponsors() {
     try {
       say("Saving...", "");
       var logo = $("spLogo").files[0];
-      var row = {
-        name: $("spName").value.trim(), comp: $("spComp").value || null, main: $("spMain").value === "yes",
-        blurb: $("spBlurb").value.trim(), website: $("spSite").value.trim(),
-        logo_path: logo ? await uploadSponsorImage(logo) : null
-      };
-      var res = await db.from("sponsors").insert(row);
-      if (res.error) throw new Error(res.error.message);
-      await drawSponsors();
-      say("Sponsor added.", "ok");
+      site.sponsors.push({ comp: $("spComp").value || null, name: $("spName").value.trim(), blurb: $("spBlurb").value.trim(), website: $("spSite").value.trim(), logo: logo ? await uploadFile(logo, "sponsors") : null, main: $("spMain").value === "yes", brands: [] });
+      markSite(); drawSponsors(); say("Sponsor added. Press Save to website when you are done.", "ok");
     } catch (err) { say("Could not add sponsor: " + err.message, "err"); }
   });
 
-  $("tabBody").querySelectorAll(".box[data-id]").forEach(function (box) {
-    var id = box.getAttribute("data-id");
-    function val(f) { return box.querySelector('[data-f="' + f + '"]').value; }
-
-    box.querySelector('[data-act="save"]').addEventListener("click", async function () {
-      try {
-        say("Saving...", "");
-        var row = { name: val("name").trim(), comp: val("comp") || null, main: val("main") === "yes", blurb: val("blurb").trim(), website: val("website").trim() };
-        var file = box.querySelector('[data-f="logo"]').files[0];
-        if (file) row.logo_path = await uploadSponsorImage(file);
-        var res = await db.from("sponsors").update(row).eq("id", id);
-        if (res.error) throw new Error(res.error.message);
-        await drawSponsors();
-        say("Sponsor saved.", "ok");
-      } catch (err) { say("Could not save: " + err.message, "err"); }
-    });
-
-    var delBtn = box.querySelector('[data-act="delete"]');
-    delBtn.addEventListener("click", function () {
-      armDelete(delBtn, async function () {
-        var res = await db.from("sponsors").delete().eq("id", id);
-        if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
-        await drawSponsors();
-        say("Sponsor and its brands deleted.", "ok");
+  $("tabBody").querySelectorAll(".box[data-i]").forEach(function (box) {
+    var s = site.sponsors[Number(box.getAttribute("data-i"))];
+    box.querySelectorAll("[data-f]").forEach(function (input) {
+      input.addEventListener("change", async function () {
+        var f = input.getAttribute("data-f");
+        try {
+          if (f === "logo") {
+            if (input.files[0]) { if (s.logo) pendingDeletes.push(s.logo); s.logo = await uploadFile(input.files[0], "sponsors"); markSite(); drawSponsors(); }
+            return;
+          }
+          if (f === "main") s.main = input.value === "yes";
+          else if (f === "comp") s.comp = input.value || null;
+          else s[f] = input.value.trim();
+          markSite();
+        } catch (err) { say("Could not save: " + err.message, "err"); }
       });
     });
-
+    box.querySelectorAll("[data-b]").forEach(function (row) {
+      var del = row.querySelector(".del");
+      del.addEventListener("click", function () {
+        armDelete(del, function () {
+          var b = s.brands[Number(row.getAttribute("data-b"))];
+          if (b.image) pendingDeletes.push(b.image);
+          s.brands.splice(Number(row.getAttribute("data-b")), 1);
+          markSite(); drawSponsors();
+        });
+      });
+    });
     box.querySelector(".brandForm").addEventListener("submit", async function (e) {
       e.preventDefault();
       try {
         say("Saving...", "");
-        function bv(f) { return box.querySelector('[data-b="' + f + '"]'); }
+        function bv(f) { return box.querySelector('.brandForm [data-n="' + f + '"]'); }
         var file = bv("img").files[0];
-        var row = { sponsor_id: id, name: bv("name").value.trim(), website: bv("site").value.trim(), image_path: file ? await uploadSponsorImage(file) : null };
-        var res = await db.from("sponsor_brands").insert(row);
-        if (res.error) throw new Error(res.error.message);
-        await drawSponsors();
-        say("Brand added.", "ok");
+        s.brands = s.brands || [];
+        s.brands.push({ name: bv("name").value.trim(), website: bv("site").value.trim(), image: file ? await uploadFile(file, "sponsors") : null });
+        markSite(); drawSponsors(); say("Brand added. Press Save to website when you are done.", "ok");
       } catch (err) { say("Could not add brand: " + err.message, "err"); }
     });
-
-    box.querySelectorAll("[data-brand]").forEach(function (item) {
-      var btn = item.querySelector(".del");
-      btn.addEventListener("click", function () {
-        armDelete(btn, async function () {
-          var res = await db.from("sponsor_brands").delete().eq("id", item.getAttribute("data-brand"));
-          if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
-          await drawSponsors();
-          say("Brand deleted.", "ok");
-        });
+    var del = box.querySelector('[data-act="delete"]');
+    del.addEventListener("click", function () {
+      armDelete(del, function () {
+        if (s.logo) pendingDeletes.push(s.logo);
+        (s.brands || []).forEach(function (b) { if (b.image) pendingDeletes.push(b.image); });
+        site.sponsors.splice(Number(box.getAttribute("data-i")), 1);
+        markSite(); drawSponsors();
       });
     });
   });
 }
 
 // ---------- Rules ----------
-async function drawRules() {
-  var res = await db.from("rules").select("*").eq("comp", comp()).order("sort_no");
-  var list = res.data || [];
-  var html = "<h2>Rules for " + COMP_NAMES[comp()] + "</h2>";
-  html += '<p class="muted">Write each rule point on its own line starting with "- ". Other lines become normal paragraphs. Changes show on the public Rules tab straight away.</p>';
-  html += '<div class="box"><h3>Add a rule section</h3><form id="addRuleForm" style="display:grid;gap:10px"><div class="row"><label>Title <input id="ruTitle" class="wide" required></label><label>Order no. <input id="ruSort" type="number" min="0" value="' + (list.length + 1) + '"></label></div>';
-  html += '<label>Text <textarea id="ruBody" rows="4" style="font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:10px;width:100%"></textarea></label><div><button class="gold" type="submit">Add section</button></div></form></div>';
-  list.forEach(function (r) {
-    html += '<div class="box" data-id="' + r.id + '"><div class="row"><label>Title <input class="wide" data-f="title" value="' + esc(r.title) + '"></label><label>Order <input type="number" min="0" data-f="sort_no" value="' + r.sort_no + '"></label></div>';
-    html += '<label style="margin-top:8px">Text <textarea rows="8" data-f="body" style="font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:10px;width:100%">' + esc(r.body) + '</textarea></label>';
-    html += '<div class="row" style="margin-top:8px"><button type="button" class="gold" data-act="save">Save</button><button type="button" class="del" data-act="delete">Delete</button></div></div>';
+function drawRules() {
+  site.rules = site.rules || [];
+  var c = comp();
+  var html = "<h2>Rules for " + COMP_NAMES[c] + "</h2>";
+  html += '<p class="muted">Write each rule point on its own line starting with "- ". Other lines become normal paragraphs.</p>';
+  html += '<div class="box"><h3>Add a rule section</h3><form id="addRuleForm" style="display:grid;gap:10px"><label>Title <input id="ruTitle" required></label><label>Text <textarea id="ruBody" rows="4"></textarea></label><div><button class="gold" type="submit">Add section</button></div></form></div>';
+  site.rules.forEach(function (r, i) {
+    if (r.comp !== c) return;
+    html += '<div class="box" data-i="' + i + '"><label>Title <input data-f="title" value="' + esc(r.title) + '"></label><label style="margin-top:8px">Text <textarea rows="8" data-f="body">' + esc(r.body) + '</textarea></label>';
+    html += '<div class="row" style="margin-top:8px"><button type="button" data-act="up">Move up</button><button type="button" class="del" data-act="delete">Delete</button></div></div>';
   });
   $("tabBody").innerHTML = html;
 
-  $("addRuleForm").addEventListener("submit", async function (e) {
+  $("addRuleForm").addEventListener("submit", function (e) {
     e.preventDefault();
-    var ins = await db.from("rules").insert({ comp: comp(), title: $("ruTitle").value.trim(), body: $("ruBody").value, sort_no: Number($("ruSort").value || 0) });
-    if (ins.error) { say("Could not add: " + ins.error.message, "err"); return; }
-    await drawRules();
-    say("Rule section added.", "ok");
+    site.rules.push({ comp: c, title: $("ruTitle").value.trim(), body: $("ruBody").value });
+    markSite(); drawRules(); say("Rule section added. Press Save to website when you are done.", "ok");
   });
-  $("tabBody").querySelectorAll(".box[data-id]").forEach(function (box) {
-    var id = box.getAttribute("data-id");
-    function val(f) { return box.querySelector('[data-f="' + f + '"]').value; }
-    box.querySelector('[data-act="save"]').addEventListener("click", async function () {
-      var up = await db.from("rules").update({ title: val("title").trim(), body: val("body"), sort_no: Number(val("sort_no") || 0) }).eq("id", id);
-      say(up.error ? "Could not save: " + up.error.message : "Rule saved.", up.error ? "err" : "ok");
+  $("tabBody").querySelectorAll(".box[data-i]").forEach(function (box) {
+    var i = Number(box.getAttribute("data-i"));
+    var r = site.rules[i];
+    box.querySelectorAll("[data-f]").forEach(function (input) {
+      input.addEventListener("change", function () { r[input.getAttribute("data-f")] = input.value; markSite(); });
+    });
+    box.querySelector('[data-act="up"]').addEventListener("click", function () {
+      // swap with the previous rule of the same section
+      for (var j = i - 1; j >= 0; j--) {
+        if (site.rules[j].comp === c) { site.rules[i] = site.rules[j]; site.rules[j] = r; break; }
+      }
+      markSite(); drawRules();
     });
     var del = box.querySelector('[data-act="delete"]');
-    del.addEventListener("click", function () {
-      armDelete(del, async function () {
-        var r = await db.from("rules").delete().eq("id", id);
-        if (r.error) { say("Could not delete: " + r.error.message, "err"); return; }
-        await drawRules();
-        say("Rule deleted.", "ok");
-      });
-    });
+    del.addEventListener("click", function () { armDelete(del, function () { site.rules.splice(i, 1); markSite(); drawRules(); }); });
   });
 }
 
-// ---------- Site settings and admins ----------
-async function drawSite() {
-  var result = await db.from("settings").select("*");
-  var set = {};
-  (result.data || []).forEach(function (r) { set[r.key] = r.value; });
-
+// ---------- Site text ----------
+function drawSite() {
+  site.info = site.info || {};
+  var c = comp();
   var html = "<h2>Site</h2>";
-  html += '<div class="box"><h3>Text on the public site</h3><form id="siteForm" style="display:grid;gap:10px">';
-  html += '<label>Contact email <input id="sEmail" type="text" value="' + esc(set.email || "") + '"></label>';
-  html += '<label>Contact phone <input id="sPhone" type="text" value="' + esc(set.phone || "") + '"></label>';
-  html += '<label>Home page intro line <input id="sHero" type="text" value="' + esc(set.hero_text || "") + '"></label>';
-  html += '<label>Notice banner on the home page (leave empty for none) <input id="sNotice" type="text" placeholder="e.g. Indoor Juniors starts on 8 November" value="' + esc(set.notice || "") + '"></label>';
-  html += '<p class="muted" style="margin:6px 0 0">Per section (Juniors shown). Knockouts: one per line as Date | Match | Time.</p>';
-  html += '<label>Juniors knockout fixtures <textarea id="sKo" rows="4" style="font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);padding:10px;width:100%">' + esc(set.knockouts_juniors || "") + '</textarea></label>';
-  html += '<label>Juniors venue <input id="sVenue" type="text" value="' + esc(set.venue_juniors || "") + '"></label>';
-  html += '<label>Juniors fixtures note <input id="sNote" type="text" value="' + esc(set.note_juniors || "") + '"></label>';
-  html += '<div><button class="gold" type="submit">Save site text</button></div></form></div>';
-
-  var adm = await db.from("admins").select("email").order("email");
-  var admins = adm.data || [];
-  html += '<div class="box"><h3>Who can use this admin page</h3>';
-  admins.forEach(function (a) {
-    html += '<div class="item row" data-email="' + esc(a.email) + '"><span style="flex:1 1 200px">' + esc(a.email) + '</span><button type="button" class="del">Delete</button></div>';
-  });
-  html += '<form id="addAdminForm" class="row" style="margin-top:12px"><label>Add an admin by email <input id="newAdmin" type="email" class="wide" required></label><button class="gold" type="submit">Add admin</button></form>';
-  html += '<p class="muted" style="margin-bottom:0">After adding an email here, create the same email as a user in Supabase (Authentication, Users, Add user) so they can sign in.</p></div>';
+  html += '<div class="box"><h3>Text on the public site</h3><div style="display:grid;gap:10px">';
+  html += '<label>Contact email <input data-k="email" value="' + esc(site.email || "") + '"></label>';
+  html += '<label>Contact phone <input data-k="phone" value="' + esc(site.phone || "") + '"></label>';
+  html += '<label>Home page intro line <input data-k="hero_text" value="' + esc(site.hero_text || "") + '"></label>';
+  html += '<label>Notice banner on the home page (leave empty for none) <input data-k="notice" placeholder="e.g. Matches this Sunday start at 15:30" value="' + esc(site.notice || "") + '"></label></div></div>';
+  html += '<div class="box"><h3>' + COMP_NAMES[c] + ' fixtures page</h3><div style="display:grid;gap:10px">';
+  html += '<label>Knockout fixtures, one per line as Date | Match | Time <textarea rows="4" data-i="knockouts_' + c + '">' + esc(site.info["knockouts_" + c] || "") + "</textarea></label>";
+  html += '<label>Venue <input data-i="venue_' + c + '" value="' + esc(site.info["venue_" + c] || "") + '"></label>';
+  html += '<label>Note under the fixtures <input data-i="note_' + c + '" value="' + esc(site.info["note_" + c] || "") + '"></label></div></div>';
   $("tabBody").innerHTML = html;
-
-  $("siteForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    var rows = [
-      { key: "email", value: $("sEmail").value.trim() },
-      { key: "phone", value: $("sPhone").value.trim() },
-      { key: "hero_text", value: $("sHero").value.trim() },
-      { key: "notice", value: $("sNotice").value.trim() },
-      { key: "knockouts_juniors", value: $("sKo").value.trim() },
-      { key: "venue_juniors", value: $("sVenue").value.trim() },
-      { key: "note_juniors", value: $("sNote").value.trim() }
-    ];
-    var res = await db.from("settings").upsert(rows);
-    say(res.error ? "Could not save: " + res.error.message : "Saved. The public site shows it on the next refresh.", res.error ? "err" : "ok");
+  $("tabBody").querySelectorAll("[data-k]").forEach(function (input) {
+    input.addEventListener("change", function () { site[input.getAttribute("data-k")] = input.value.trim(); markSite(); });
   });
-
-  $("addAdminForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    var res = await db.from("admins").insert({ email: $("newAdmin").value.trim().toLowerCase() });
-    if (res.error) { say("Could not add: " + res.error.message, "err"); return; }
-    await drawSite();
-    say("Admin added.", "ok");
-  });
-
-  $("tabBody").querySelectorAll("[data-email]").forEach(function (item) {
-    var btn = item.querySelector(".del");
-    btn.addEventListener("click", function () {
-      armDelete(btn, async function () {
-        var res = await db.from("admins").delete().eq("email", item.getAttribute("data-email"));
-        if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
-        await drawSite();
-        say("Admin removed.", "ok");
-      });
-    });
+  $("tabBody").querySelectorAll("[data-i]").forEach(function (input) {
+    input.addEventListener("change", function () { site.info[input.getAttribute("data-i")] = input.value.trim(); markSite(); });
   });
 }
 
-start();
+// ---------- Start ----------
+(function start() {
+  var saved = readSaved();
+  $("loginBox").hidden = false;
+  if (saved.repo) $("repoIn").value = saved.repo;
+  if (saved.branch) $("branchIn").value = saved.branch;
+  if (saved.token) {
+    $("tokenIn").value = saved.token;
+    connect(saved.repo || $("repoIn").value, saved.branch || "main", saved.token).catch(function (err) { say("Could not connect: " + err.message, "err"); });
+  }
+})();
 </script>
 </body>
 </html>

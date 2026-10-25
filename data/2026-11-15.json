@@ -1,0 +1,31 @@
+{
+ "date": "2026-11-15",
+ "matches": [
+  {
+   "comp": "juniors",
+   "time": "15:30",
+   "home": "SA",
+   "away": "BT",
+   "hr": null,
+   "hw": null,
+   "ar": null,
+   "aw": null,
+   "hb": 0,
+   "ab": 0,
+   "stats": []
+  },
+  {
+   "comp": "juniors",
+   "time": "16:45",
+   "home": "GB",
+   "away": "NP",
+   "hr": null,
+   "hw": null,
+   "ar": null,
+   "aw": null,
+   "hb": 0,
+   "ab": 0,
+   "stats": []
+  }
+ ]
+}

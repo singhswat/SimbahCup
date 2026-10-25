@@ -1,0 +1,203 @@
+{
+ "email": "info@simbahcup.co.uk",
+ "phone": "+44 7840 925593",
+ "hero_text": "Indoor and outdoor cricket. Pick your section to see the table, fixtures and results.",
+ "notice": "",
+ "info": {
+  "knockouts_juniors": "24 Jan 2027 | Qualifier 1 | 15:30\n31 Jan 2027 | Qualifier 2 | 15:30\n07 Feb 2027 | Final | 14:15",
+  "venue_juniors": "The Webber Independent School, Soskin Dr, Stantonbury Fields, Stantonbury, Milton Keynes MK14 6DP",
+  "note_juniors": "No fixtures on 8 Nov, 20 Dec, 27 Dec 2026 and 3 Jan 2027. Six teams, single round robin: 15 league matches, 5 league games per team, then 2 qualifiers and the final. Each match is 1 hour 15 minutes."
+ },
+ "teams": [
+  {
+   "comp": "juniors",
+   "code": "SA",
+   "name": "Simbah Academy",
+   "players": []
+  },
+  {
+   "comp": "juniors",
+   "code": "GB",
+   "name": "Great Brickhill CC",
+   "players": []
+  },
+  {
+   "comp": "juniors",
+   "code": "BT",
+   "name": "Bletchley Town CC",
+   "players": []
+  },
+  {
+   "comp": "juniors",
+   "code": "NP",
+   "name": "Newport Pagnell CC",
+   "players": []
+  },
+  {
+   "comp": "juniors",
+   "code": "MA",
+   "name": "MK Air CC",
+   "players": []
+  },
+  {
+   "comp": "juniors",
+   "code": "MC",
+   "name": "MK Crescent/Silverstone",
+   "players": []
+  },
+  {
+   "comp": "outdoor",
+   "code": "FXM",
+   "name": "FX Masters C",
+   "p": 10,
+   "w": 8,
+   "l": 0,
+   "d": 0,
+   "pts": 81,
+   "nrr": "1.173",
+   "players": []
+  },
+  {
+   "comp": "outdoor",
+   "code": "MKK",
+   "name": "MK Knight Riders C",
+   "p": 11,
+   "w": 5,
+   "l": 5,
+   "d": 0,
+   "pts": 48,
+   "nrr": "0.114",
+   "players": []
+  },
+  {
+   "comp": "outdoor",
+   "code": "RIF",
+   "name": "MK Rifles CC C",
+   "p": 8,
+   "w": 1,
+   "l": 6,
+   "d": 0,
+   "pts": 14,
+   "nrr": "-1.210",
+   "players": []
+  },
+  {
+   "comp": "outdoor",
+   "code": "OUT",
+   "name": "MKCC Outlaws C",
+   "p": 9,
+   "w": 2,
+   "l": 7,
+   "d": 0,
+   "pts": 16,
+   "nrr": "-0.690",
+   "players": []
+  },
+  {
+   "comp": "outdoor",
+   "code": "RLC",
+   "name": "Royal Lions C",
+   "p": 10,
+   "w": 5,
+   "l": 4,
+   "d": 0,
+   "pts": 49,
+   "nrr": "0.469",
+   "players": []
+  }
+ ],
+ "sponsors": [],
+ "rules": [
+  {
+   "comp": "juniors",
+   "title": "1. Team rules",
+   "body": "- Each team should have 8 players. A match can go ahead with a minimum of 6 eligible players.\n- With fewer than 8 players, players may bat again to complete the four pairs in the first 8 overs. The opposition captain randomly selects who bats again. In the final five overs only the available players bat.\n- A team with fewer than 6 eligible players cannot play the fixture.\n- Each innings is 13 overs, unless reduced under the schedule rules.\n- The umpire's decision is final.\n- The umpire completes the match scoring and uploads it to Simbahcup.co.uk so players can check their stats."
+  },
+  {
+   "comp": "juniors",
+   "title": "2. Match duration and over-rate",
+   "body": "- Each match is scheduled to finish within 1 hour 15 minutes.\n- The published start time is when the first ball must be bowled, not the time for the toss or team preparation.\n- Team selection on Play-Cricket must be done in advance. The toss, warm-up, wicketkeeper preparation and protective equipment must be finished before the scheduled start.\n- The bowling and fielding team must complete its 13 overs within 35 minutes, starting when the first ball of the innings is bowled.\n- Both teams must keep the game moving. Bowlers, fielders and batters must be ready promptly between deliveries and overs.\n- The umpire gives the fielding captain a time warning after 8 overs if the team is behind the required over-rate.\n- If the fielding team does not complete 13 overs in 35 minutes, 5 penalty runs go to the batting team and/or the overs in the second innings may be reduced at the umpire's discretion.\n- For unnecessary or deliberate batting-team delay, the umpire may deduct 5 runs and/or reduce that team's overs. Repeated delay may bring another 5-run penalty.\n- The umpire may exclude time lost to injury, equipment, discussions or anything outside either team's control.\n- The umpire is the official timekeeper and has the final say on time allowances and penalties.\n\nSchedule management: the organisers may reduce the number of overs to keep the competition on schedule. Where possible both teams get the same number of overs. Any reduced format and the matching pair or final-phase allocation will be announced before play."
+  },
+  {
+   "comp": "juniors",
+   "title": "3. Age criteria",
+   "body": "- Players must have been born on or after 1 September 2011.\n- The age limits are strict. Be ready to show proof of age to the organisers if asked, especially if a player's age is uncertain.\n- Younger players may play in the U15 competition, subject to junior cricket safety requirements."
+  },
+  {
+   "comp": "juniors",
+   "title": "4. Kit and shoes",
+   "body": "- Players are encouraged to wear their organiser-provided cricket kit.\n- Only clean, non-marking indoor sports shoes with good grip are allowed. Shoes that may mark the floor or lack grip are not permitted."
+  },
+  {
+   "comp": "juniors",
+   "title": "5. Batting rules",
+   "body": "- For the first 8 overs, batters bat in pairs. Each pair faces 2 overs.\n- A dismissal in the pairs phase deducts 3 runs from the dismissed batter's score, and so 3 runs from the team total. The batter continues within the pair's allocation.\n- After a pairs-phase dismissal the batters change ends, so the non-striker faces the next ball. If the dismissal is on the last ball of an over, normal end-of-over strike rotation applies.\n- If the same batter faces three consecutive legal dot balls in the pairs phase, the batters change ends before the next ball. No extra change is needed if the third dot is the last ball of the over. A wide or no-ball resets the count.\n- After 8 overs the captain chooses the batting order for the remaining 5 overs. In this phase a dismissed batter is out and cannot continue. The innings ends after 13 overs, or when all 8 batters are out in this phase, whichever comes first. For a short team, that means all available batters.\n- There are no free hits after a no-ball."
+  },
+  {
+   "comp": "juniors",
+   "title": "6. Playing area and scoring zones",
+   "body": "- The bounce line and scoring areas are confirmed at the venue before play.\n- Players and officials must respect the hall and equipment. Report any damage to the organisers."
+  },
+  {
+   "comp": "juniors",
+   "title": "7. Scoring rules",
+   "body": "- A ball hit directly by the batter onto the front or straight wall, without first touching the floor, another wall, the ceiling or a fielder, scores 6 runs.\n- A ball reaching the front or straight wall after touching the floor or a fielder scores 4 runs.\n- Hitting a side-wall scoring area scores 1 run.\n- Hitting a green-curtain scoring area scores 2 runs.\n- Wall runs are based only on the first scoring wall or area touched.\n- Batters can score extra runs by running after a 1-run or 2-run wall contact.\n- A ball reaching a wall without touching the bat gets no wall bonus. Only extras and runs physically completed count.\n- A ball that deflects off a fielder onto a scoring wall counts as runs."
+  },
+  {
+   "comp": "juniors",
+   "title": "8. Bowling rules",
+   "body": "- Each bowler can bowl a maximum of 3 overs.\n- An over is 6 deliveries.\n- A delivery beyond the batter's normal reach in a normal stance, and not touched by the bat, is a wide. The umpire is the sole judge.\n- In overs 1 to 12, a wide or no-ball scores 2 runs and is not re-bowled.\n- In the final over, a wide or no-ball scores 1 run and must be re-bowled. The final over must have 6 legal deliveries.\n- The ball must pitch on or beyond the bounce line from the bowler's end. A ball pitching before it is a no-ball.\n- Any delivery above waist height without bouncing is a no-ball.\n- All normal ways of getting out apply except LBW: bowled, caught, run out, stumped and hit wicket."
+  },
+  {
+   "comp": "juniors",
+   "title": "9. Fielding rules",
+   "body": "- When a wicket falls, the runs from that delivery are cancelled and the wicket is awarded. In the pairs phase the 3-run deduction also applies.\n- A ball rebounding from a wall must be caught one-handed, and must not have touched the floor. A rebound from the ceiling cannot be caught out.\n- The wicketkeeper must wear proper protective equipment, including a helmet.\n- No wall bonus runs after an overthrow. Batters may keep running while the ball is live, and completed runs count.\n- If the batter hits the ball, it touches a fielder and then reaches a side-wall scoring area, the side-wall runs are awarded."
+  },
+  {
+   "comp": "juniors",
+   "title": "10. Points system",
+   "body": "- Win: 6 points.\n- Tie: 3 points each.\n- Loss: 0 points, and no bonus points.\n- All players in organiser-provided kit: 2 bonus points (winning team only).\n- 10 sixes in one match: 1 bonus point (winning team only).\n- Opposition all out: 1 bonus point (winning team only).\n\nA winning team can earn up to 10 points: 6 for the win plus 2 kit, 1 sixes and 1 all-out. Bonus points are only given if the condition is met. The losing team gets no points or bonuses."
+  },
+  {
+   "comp": "juniors",
+   "title": "11. Play-off format",
+   "body": "- Qualifier: 1st v 2nd. The winner goes straight to the Final.\n- Eliminator: 3rd v 4th. The loser is out.\n- Play-Off: the loser of the Qualifier plays the winner of the Eliminator. The winner goes to the Final.\n- Final: the Qualifier winner plays the Play-Off winner for the title."
+  },
+  {
+   "comp": "juniors",
+   "title": "12. Tied matches and league positions",
+   "body": "- If both teams finish on the same score the match is tied and each team gets 3 points.\n- League positions are decided by: (1) total points, (2) Net Run Rate (NRR), (3) head-to-head result, (4) organiser decision if still level.\n- NRR is runs scored per over faced minus runs conceded per over bowled across league matches. An all-out innings counts as its full scheduled allocation of overs."
+  },
+  {
+   "comp": "juniors",
+   "title": "13. Retired hurt and injury",
+   "body": "- A batter who cannot continue through injury or illness is recorded as Retired Hurt. No dismissal penalty applies.\n- In the pairs phase, an eligible player may complete that batter's remaining deliveries within the pair's allocation.\n- In the final normal phase, a retired-hurt batter may return later if fit, with the umpire's approval."
+  },
+  {
+   "comp": "juniors",
+   "title": "14. Match scenarios",
+   "body": "- Wide, back wall and a completed run: a wide passes the wicketkeeper, reaches the back wall without touching the bat, and the batters complete one run. In overs 1 to 12 that is 2 wide runs plus 1 run = 3 runs. No wall bonus.\n- Two walls and running: the batter hits a 2-run area, the ball rebounds onto another wall and the pair completes 2 runs. Only the first area counts: 2 wall runs plus 2 completed runs = 4.\n- No-ball and direct front wall: in overs 1 to 12 a no-ball is hit in the air onto the front wall. 2 no-ball runs plus 6 wall runs = 8.\n- Dismissal after scoring or running: all runs from that ball are cancelled. In the pairs phase 3 runs are deducted from the batter and the team total. In the final 5 overs the batter is out.\n- Three dot balls in a row: in the pairs phase the same batter facing three legal dots in a row must change ends, except on the last ball of the over. A wide or no-ball resets the count.\n- Wide or no-ball in the final over: it scores 1 extra and is re-bowled. The over continues until 6 legal deliveries are bowled.\n- Fielder before front wall: the batter hits the ball in the air, it touches a fielder and then reaches the front wall. The wall score is 4.\n- Overthrow reaches a wall: no wall bonus, but batters may keep running and completed runs count.\n- Wall rebound catch: the batter hits the ball into a wall and a fielder catches the rebound one-handed before it touches the floor. The batter is out. A ceiling rebound cannot be caught out.\n- Six-player team: the opposition captain randomly picks two repeat batting places to complete 4 pairs in the first 8 overs. Only the 6 available players bat in the final phase.\n- Seven-player team: the opposition captain randomly picks one repeat batter to complete 4 pairs in the first 8 overs. Only the 7 available players bat in the final phase.\n- Retired Hurt: no 3-run penalty. The pair's remaining allocation is completed under the Retired Hurt rule.\n- Tied match: if both teams finish on the same score the match is tied and each team gets 3 points."
+  },
+  {
+   "comp": "juniors",
+   "title": "15. Spirit of Cricket",
+   "body": "- All players, coaches and supporters must respect opponents, umpires and organisers and uphold the Spirit of Cricket.\n- Abusive language, intimidation or inappropriate sledging will not be tolerated."
+  },
+  {
+   "comp": "juniors",
+   "title": "16. General playing condition",
+   "body": "- Where these rules do not cover a situation, the normal Laws of Cricket and junior cricket safety requirements apply.\n- The umpire's decision is final."
+  }
+ ],
+ "gallery": [],
+ "sundays": [
+  "2026-10-25",
+  "2026-11-01",
+  "2026-11-15",
+  "2026-11-22",
+  "2026-11-29",
+  "2026-12-06",
+  "2026-12-13",
+  "2027-01-10"
+ ]
+}
