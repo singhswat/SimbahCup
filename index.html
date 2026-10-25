@@ -73,18 +73,18 @@ h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.1; ma
 .hero h1 em { display: block; font-family: var(--serif); font-style: italic; font-weight: 600; font-size: 0.86em; background: linear-gradient(100deg, var(--gold-lo), var(--gold-hi) 45%, var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: 0.1em; }
 .sponsors { margin: 18px 0; border: 1px solid var(--gold); background: linear-gradient(145deg, rgba(201, 168, 76, 0.10), var(--panel)); padding: 16px; display: grid; gap: 14px; }
 .sponsors > h3 { margin: 0; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
-.sp { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
-.sp-logo { flex: 0 0 auto; width: 96px; height: 96px; background: #fff; display: grid; place-items: center; padding: 8px; }
-.sp.main .sp-logo { width: 132px; height: 132px; }
-.sp-logo img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
-.sp-text { flex: 1 1 200px; min-width: 0; }
+.sp { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+.sp-logo { flex: 0 0 auto; display: flex; width: 64px; height: 64px; background: #fff; align-items: center; justify-content: center; padding: 6px; }
+.sp.main .sp-logo { width: 96px; height: 96px; }
+.sp-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.sp-text { flex: 1 1 140px; min-width: 0; }
 .sp-text h4 { margin: 0 0 2px; font-size: 18px; }
 .sp-text p { margin: 0 0 4px; color: var(--muted); font-size: 14px; }
 .sp-text a { color: var(--gold); font-weight: 700; }
 .brands { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.brand { width: 72px; text-align: center; font-size: 11px; color: var(--muted); text-decoration: none; }
-.brand span.img { display: grid; place-items: center; width: 72px; height: 54px; background: #fff; padding: 4px; margin-bottom: 3px; }
-.brand img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.sbrand { display: block; width: 72px; text-align: center; font-size: 11px; color: var(--muted); text-decoration: none; }
+.sbrand span.img { display: flex; align-items: center; justify-content: center; width: 72px; height: 54px; background: #fff; padding: 4px; margin-bottom: 3px; }
+.sbrand img { width: 100%; height: 100%; object-fit: contain; }
 .notice { margin: 16px 0 0; padding: 12px 14px; border: 1px solid var(--gold); background: rgba(201, 168, 76, 0.12); font-weight: 600; }
 .hero p { max-width: 46ch; color: var(--muted); margin: 16px 0 24px; }
 .btns { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -172,7 +172,7 @@ footer b { font-family: var(--display); color: var(--fg); letter-spacing: 0.06em
 .grid2.block > section:last-child h3 { font-size: 20px; }
 .grid2.block > section:last-child .head a { font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; }
 
-.brand img { height: 40px; width: auto; display: block; align-self: center; }
+.sbrand img { height: 40px; width: auto; display: block; align-self: center; }
 .brand small { display: none; }
 @media (min-width: 560px) { .brand small { display: inline; } }
 .hero-in { display: flex; flex-wrap: wrap-reverse; align-items: center; justify-content: space-between; gap: 28px; }
@@ -402,6 +402,7 @@ async function loadData() {
 }
 
 function publicUrl(path) {
+  if (path.indexOf("data:") === 0) return path;
   return db.storage.from("gallery").getPublicUrl(path).data.publicUrl;
 }
 
@@ -501,7 +502,7 @@ function sponsorBox(compKey) {
       html += '<div class="brands">';
       mine.forEach(function (b) {
         var inner = '<span class="img">' + (b.image_path ? '<img src="' + publicUrl(b.image_path) + '" alt="" loading="lazy">' : "") + "</span>" + esc(b.name);
-        html += b.website ? '<a class="brand" href="' + esc(b.website) + '" target="_blank" rel="noopener">' + inner + "</a>" : '<div class="brand">' + inner + "</div>";
+        html += b.website ? '<a class="sbrand" href="' + esc(b.website) + '" target="_blank" rel="noopener">' + inner + "</a>" : '<div class="sbrand">' + inner + "</div>";
       });
       html += "</div>";
     }
