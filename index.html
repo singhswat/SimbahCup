@@ -71,6 +71,21 @@ h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.1; ma
 .hero { position: relative; padding-block: 44px 36px; border-bottom: 1px solid var(--line); background: radial-gradient(900px 340px at 85% 0%, rgba(201, 168, 76, 0.14), transparent 70%); margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
 .hero h1 { font-size: clamp(40px, 11vw, 84px); letter-spacing: -0.01em; }
 .hero h1 em { display: block; font-family: var(--serif); font-style: italic; font-weight: 600; font-size: 0.86em; background: linear-gradient(100deg, var(--gold-lo), var(--gold-hi) 45%, var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: 0.1em; }
+.sponsors { margin: 18px 0; border: 1px solid var(--gold); background: linear-gradient(145deg, rgba(201, 168, 76, 0.10), var(--panel)); padding: 16px; display: grid; gap: 14px; }
+.sponsors > h3 { margin: 0; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+.sp { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.sp-logo { flex: 0 0 auto; width: 96px; height: 96px; background: #fff; display: grid; place-items: center; padding: 8px; }
+.sp.main .sp-logo { width: 132px; height: 132px; }
+.sp-logo img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.sp-text { flex: 1 1 200px; min-width: 0; }
+.sp-text h4 { margin: 0 0 2px; font-size: 18px; }
+.sp-text p { margin: 0 0 4px; color: var(--muted); font-size: 14px; }
+.sp-text a { color: var(--gold); font-weight: 700; }
+.brands { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.brand { width: 72px; text-align: center; font-size: 11px; color: var(--muted); text-decoration: none; }
+.brand span.img { display: grid; place-items: center; width: 72px; height: 54px; background: #fff; padding: 4px; margin-bottom: 3px; }
+.brand img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.notice { margin: 16px 0 0; padding: 12px 14px; border: 1px solid var(--gold); background: rgba(201, 168, 76, 0.12); font-weight: 600; }
 .hero p { max-width: 46ch; color: var(--muted); margin: 16px 0 24px; }
 .btns { display: flex; flex-wrap: wrap; gap: 10px; }
 .btn { font-family: var(--display); font-weight: 800; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; text-decoration: none; padding: 14px 20px; border: 1px solid var(--gold); color: var(--fg); background: transparent; cursor: pointer; }
@@ -281,6 +296,10 @@ var CREST = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUEBAQEAwUE
 var EMAIL = "info@simbahcup.co.uk";
 var PHONE = "+44 7840 925593";
 var VENUE = "Milton Keynes";
+var HERO_TEXT = "Indoor and outdoor cricket. Pick your section to see the table, fixtures and results.";
+var NOTICE = "";
+var sponsorList = [];
+var brandList = [];
 
 var CFG = window.SIMBAH_CONFIG || {};
 var db = null;            // database connection, created in loadData()
@@ -361,6 +380,20 @@ async function loadData() {
     if (teams.error || players.error || matches.error || gallery.error) throw new Error("load failed");
     Object.keys(COMPS).forEach(function (key) { fillComp(COMPS[key], teams.data, players.data, matches.data); });
     galleryItems = gallery.data;
+    // Sponsors are optional: if they fail to load the rest of the site still works.
+    var sp = await db.from("sponsors").select("*").order("sort_no");
+    var br = await db.from("sponsor_brands").select("*").order("created_at");
+    if (!sp.error && !br.error) { sponsorList = sp.data; brandList = br.data; }
+    // Site settings from the admin page. If they fail to load, the defaults above stay.
+    var settings = await db.from("settings").select("*");
+    if (!settings.error) {
+      settings.data.forEach(function (row) {
+        if (row.key === "email" && row.value) EMAIL = row.value;
+        if (row.key === "phone" && row.value) PHONE = row.value;
+        if (row.key === "hero_text" && row.value) HERO_TEXT = row.value;
+        if (row.key === "notice") NOTICE = row.value;
+      });
+    }
     loadState = "ready";
   } catch (err) {
     loadState = "error";
@@ -451,15 +484,44 @@ function tile(c, wide) {
   return html;
 }
 
+// Sponsor container. compKey is a section key, or "all" for the home page.
+function sponsorBox(compKey) {
+  var list = sponsorList.filter(function (sp) { return compKey === "all" || sp.comp === compKey || !sp.comp; });
+  if (!list.length) return "";
+  list.sort(function (a, b) { return (b.main ? 1 : 0) - (a.main ? 1 : 0); });
+  var html = '<section class="sponsors" aria-label="Sponsors"><h3>' + (list.length > 1 ? "Our sponsors" : "Presented by") + "</h3>";
+  list.forEach(function (sp) {
+    html += '<div class="sp' + (sp.main ? " main" : "") + '">';
+    if (sp.logo_path) html += '<div class="sp-logo"><img src="' + publicUrl(sp.logo_path) + '" alt="' + esc(sp.name) + ' logo" loading="lazy"></div>';
+    html += '<div class="sp-text"><h4>' + esc(sp.name) + "</h4>";
+    if (sp.blurb) html += "<p>" + esc(sp.blurb) + "</p>";
+    if (sp.website) html += '<a href="' + esc(sp.website) + '" target="_blank" rel="noopener">Visit website</a>';
+    var mine = brandList.filter(function (b) { return b.sponsor_id === sp.id; });
+    if (mine.length) {
+      html += '<div class="brands">';
+      mine.forEach(function (b) {
+        var inner = '<span class="img">' + (b.image_path ? '<img src="' + publicUrl(b.image_path) + '" alt="" loading="lazy">' : "") + "</span>" + esc(b.name);
+        html += b.website ? '<a class="brand" href="' + esc(b.website) + '" target="_blank" rel="noopener">' + inner + "</a>" : '<div class="brand">' + inner + "</div>";
+      });
+      html += "</div>";
+    }
+    html += "</div></div>";
+  });
+  return html + "</section>";
+}
+
 function viewHome() {
-  var html = '<section class="hero"><div class="hero-in"><div class="hero-copy"><p class="eyebrow">Milton Keynes · Cricket</p>';
+  var html = "";
+  if (NOTICE) html += '<p class="notice" role="status">' + esc(NOTICE) + "</p>";
+  html += '<section class="hero"><div class="hero-in"><div class="hero-copy"><p class="eyebrow">Milton Keynes · Cricket</p>';
   html += "<h1>Simbah Cup<em>The Roar of Cricket</em></h1>";
-  html += '<p class="hero-sub">Indoor and outdoor cricket. Pick your section to see the table, fixtures and results.</p></div>';
+  html += '<p class="hero-sub">' + esc(HERO_TEXT) + "</p></div>";
   html += '<img class="crest" src="' + CREST + '" alt="Simbah Cup crest: a crowned lion inside a gold laurel wreath" width="320" height="297"></div></section>';
 
   html += '<p class="lead-in">Indoor · Now open</p><div class="tiles three">' + tile(COMPS.adults) + tile(COMPS.seniors) + tile(COMPS.juniors) + "</div>";
   html += '<p class="lead-in">Outdoor · Last season</p><div class="tiles">' + tile(COMPS.outdoor, true) + "</div>";
 
+  html += sponsorBox("all");
   if (galleryItems.length) {
     html += '<p class="lead-in">Latest from the gallery</p><div class="gal">';
     galleryItems.filter(function (g) { return g.kind === "image"; }).slice(0, 4).forEach(function (g) {
@@ -484,6 +546,7 @@ function viewComp(comp, tab) {
     html += '<a href="#' + comp.key + (t[0] === "table" ? "" : "-" + t[0]) + '"' + (t[0] === tab ? ' aria-current="page"' : "") + ">" + t[1] + "</a>";
   });
   html += "</nav>";
+  html += sponsorBox(comp.key);
 
   if (tab === "table") {
     html += comp.table.length ? fullTable(comp) + '<p class="note">P played, W won, L lost, D drawn, Pts points, NRR net run rate.</p>' : emptyState(comp, "The table");

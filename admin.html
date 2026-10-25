@@ -32,7 +32,7 @@ button.gold { background: var(--gold); color: var(--bg); border-color: var(--gol
 button.del { border-color: var(--bad); color: var(--bad); }
 button.del.sure { background: var(--bad); color: var(--bg); }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
-.tabs { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); margin: 16px 0; }
+.tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); border: 1px solid var(--line); margin: 16px 0; }
 .tabs button { border: 0; border-right: 1px solid var(--line); padding: 14px 4px; color: var(--muted); }
 .tabs button:last-child { border-right: 0; }
 .tabs button[aria-pressed="true"] { background: var(--gold); color: var(--bg); }
@@ -72,7 +72,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 
   <!-- Admin panel -->
   <section id="panel" hidden>
-    <div class="box row">
+    <div class="box row" id="compBar">
       <label>Section
         <select id="compSel">
           <option value="adults">Indoor Adults</option>
@@ -89,6 +89,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
       <button type="button" data-tab="players" aria-pressed="false">Players</button>
       <button type="button" data-tab="scores" aria-pressed="false">Scores</button>
       <button type="button" data-tab="gallery" aria-pressed="false">Gallery</button>
+      <button type="button" data-tab="sponsors" aria-pressed="false">Sponsors</button>
+      <button type="button" data-tab="site" aria-pressed="false">Site</button>
     </nav>
 
     <div id="tabBody"></div>
@@ -197,11 +199,14 @@ async function showTab(name) {
     b.setAttribute("aria-pressed", String(b.getAttribute("data-tab") === name));
   });
   say("", "");
-  if (name !== "gallery") await loadTeams();
+  $("compBar").hidden = (name === "gallery" || name === "site" || name === "sponsors");
+  if (name !== "gallery" && name !== "site" && name !== "sponsors") await loadTeams();
   if (name === "teams") drawTeams();
   if (name === "players") await drawPlayers();
   if (name === "scores") await drawScores();
   if (name === "gallery") await drawGallery();
+  if (name === "site") await drawSite();
+  if (name === "sponsors") await drawSponsors();
 }
 
 // ---------- Teams ----------
@@ -286,7 +291,7 @@ async function drawPlayers() {
   html += '<div class="box"><h3>Squad (' + players.length + ")</h3>";
   if (!players.length) html += '<p class="muted">No players yet.</p>';
   players.forEach(function (p) {
-    html += '<div class="item row" data-id="' + p.id + '"><span style="flex:1 1 200px">' + (p.shirt_no ? "<b>" + p.shirt_no + "</b> " : "") + esc(p.name) + (p.role ? ' <span class="muted">' + esc(p.role) + "</span>" : "") + '</span><button type="button" class="del">Delete</button></div>';
+    html += '<div class="item row" data-id="' + p.id + '"><label>Name <input class="wide" data-f="name" value="' + esc(p.name) + '"></label><label>Role <input class="small" data-f="role" value="' + esc(p.role || "") + '"></label><label>No. <input type="number" min="0" data-f="shirt_no" value="' + (p.shirt_no === null ? "" : p.shirt_no) + '"></label><button type="button" data-act="save">Save</button><button type="button" class="del">Delete</button></div>';
   });
   html += "</div>";
   $("tabBody").innerHTML = html;
@@ -301,6 +306,12 @@ async function drawPlayers() {
     say("Player added.", "ok");
   });
   $("tabBody").querySelectorAll(".item").forEach(function (item) {
+    item.querySelector('[data-act="save"]').addEventListener("click", async function () {
+      function val(f) { return item.querySelector('[data-f="' + f + '"]').value; }
+      var row = { name: val("name").trim(), role: val("role").trim() || null, shirt_no: numOrNull(val("shirt_no")) };
+      var res = await db.from("players").update(row).eq("id", item.getAttribute("data-id"));
+      say(res.error ? "Could not save: " + res.error.message : "Player saved.", res.error ? "err" : "ok");
+    });
     var btn = item.querySelector(".del");
     btn.addEventListener("click", function () {
       armDelete(btn, async function () {
@@ -314,6 +325,12 @@ async function drawPlayers() {
 }
 
 // ---------- Scores ----------
+function teamOptions(selectedId) {
+  var out = "";
+  teams.forEach(function (t) { out += '<option value="' + t.id + '"' + (t.id === selectedId ? " selected" : "") + ">" + esc(t.name) + "</option>"; });
+  return out;
+}
+
 function teamNameById(id) {
   for (var i = 0; i < teams.length; i++) { if (teams[i].id === id) return teams[i].name; }
   return "?";
@@ -341,8 +358,13 @@ async function drawScores() {
   html += '<div class="box"><h3>Matches (' + matches.length + ")</h3>";
   if (!matches.length) html += '<p class="muted">No matches yet.</p>';
   matches.forEach(function (m) {
-    html += '<div class="item" data-id="' + m.id + '"><b>' + esc(teamNameById(m.home_team)) + "</b> v <b>" + esc(teamNameById(m.away_team)) + "</b>";
-    html += ' <span class="muted">' + m.match_date + " " + esc(m.match_time) + (m.status === "played" ? " · played" : " · upcoming") + "</span>";
+    html += '<div class="item" data-id="' + m.id + '"><div class="row">';
+    html += '<label>Home <select data-f="home_team">' + teamOptions(m.home_team) + "</select></label>";
+    html += '<label>Away <select data-f="away_team">' + teamOptions(m.away_team) + "</select></label>";
+    html += '<label>Date <input type="date" data-f="match_date" value="' + m.match_date + '"></label>';
+    html += '<label>Time <input type="time" data-f="match_time" value="' + esc(m.match_time) + '"></label>';
+    html += '<button type="button" data-act="details">Save details</button></div>';
+    html += '<span class="muted">' + (m.status === "played" ? "Played" : "Upcoming") + "</span>";
     html += '<div class="score"><span class="v">' + esc(teamNameById(m.home_team)) + '</span><input type="number" min="0" data-f="home_runs" placeholder="runs" value="' + (m.home_runs === null ? "" : m.home_runs) + '"><span>/</span><input type="number" min="0" max="10" data-f="home_wkts" placeholder="wkts" value="' + (m.home_wkts === null ? "" : m.home_wkts) + '"></div>';
     html += '<div class="score"><span class="v">' + esc(teamNameById(m.away_team)) + '</span><input type="number" min="0" data-f="away_runs" placeholder="runs" value="' + (m.away_runs === null ? "" : m.away_runs) + '"><span>/</span><input type="number" min="0" max="10" data-f="away_wkts" placeholder="wkts" value="' + (m.away_wkts === null ? "" : m.away_wkts) + '"></div>';
     html += '<div class="row"><button type="button" class="gold" data-act="save">Save score</button><button type="button" data-act="clear">Clear score</button><button type="button" class="del" data-act="delete">Delete</button></div></div>';
@@ -375,6 +397,15 @@ async function drawScores() {
       if (res.error) { say("Could not save the score: " + res.error.message, "err"); return; }
       await drawScores();
       say("Score saved. The table updates by itself.", "ok");
+    });
+
+    item.querySelector('[data-act="details"]').addEventListener("click", async function () {
+      if (val("home_team") === val("away_team")) { say("Pick two different teams.", "err"); return; }
+      var row = { home_team: val("home_team"), away_team: val("away_team"), match_date: val("match_date"), match_time: val("match_time") };
+      var res = await db.from("matches").update(row).eq("id", id);
+      if (res.error) { say("Could not save: " + res.error.message, "err"); return; }
+      await drawScores();
+      say("Match details saved.", "ok");
     });
 
     item.querySelector('[data-act="clear"]').addEventListener("click", async function () {
@@ -428,7 +459,7 @@ async function drawGallery() {
     var url = db.storage.from("gallery").getPublicUrl(g.path).data.publicUrl;
     html += '<figure data-id="' + g.id + '" data-path="' + esc(g.path) + '">';
     html += g.kind === "video" ? '<video src="' + url + '#t=0.1" preload="metadata" controls playsinline></video>' : '<img loading="lazy" src="' + url + '" alt="">';
-    html += "<figcaption>" + esc(g.title || "No caption") + (g.comp ? " · " + COMP_NAMES[g.comp] : "") + '</figcaption><button type="button" class="del">Delete</button></figure>';
+    html += '<input data-f="title" placeholder="Caption" value="' + esc(g.title || "") + '"><figcaption>' + (g.comp ? COMP_NAMES[g.comp] : "All sections") + '</figcaption><button type="button" data-act="save">Save caption</button><button type="button" class="del">Delete</button></figure>';
   });
   html += "</div></div>";
   $("tabBody").innerHTML = html;
@@ -462,6 +493,10 @@ async function drawGallery() {
   });
 
   $("tabBody").querySelectorAll("figure").forEach(function (fig) {
+    fig.querySelector('[data-act="save"]').addEventListener("click", async function () {
+      var res = await db.from("gallery").update({ title: fig.querySelector('[data-f="title"]').value.trim() }).eq("id", fig.getAttribute("data-id"));
+      say(res.error ? "Could not save: " + res.error.message : "Caption saved.", res.error ? "err" : "ok");
+    });
     var btn = fig.querySelector(".del");
     btn.addEventListener("click", function () {
       armDelete(btn, async function () {
@@ -470,6 +505,203 @@ async function drawGallery() {
         if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
         await drawGallery();
         say("Deleted.", "ok");
+      });
+    });
+  });
+}
+
+// ---------- Sponsors ----------
+function fileUrl(path) { return db.storage.from("gallery").getPublicUrl(path).data.publicUrl; }
+
+// Uploads one image (resized) to the bucket under sponsors/ and returns its path
+async function uploadSponsorImage(file) {
+  var body = file, contentType = file.type, ext = file.name.split(".").pop().toLowerCase();
+  if (ext !== "svg") {
+    try {
+      var bitmap = await createImageBitmap(file);
+      var scale = Math.min(1, 800 / Math.max(bitmap.width, bitmap.height));
+      var canvas = document.createElement("canvas");
+      canvas.width = Math.round(bitmap.width * scale);
+      canvas.height = Math.round(bitmap.height * scale);
+      canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      // PNG keeps transparent logos clean
+      body = await new Promise(function (resolve) { canvas.toBlob(resolve, "image/png"); });
+      contentType = "image/png"; ext = "png";
+    } catch (err) { body = file; }
+  }
+  var path = "sponsors/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+  var up = await db.storage.from("gallery").upload(path, body, { contentType: contentType });
+  if (up.error) throw new Error(up.error.message);
+  return path;
+}
+
+async function drawSponsors() {
+  var sp = await db.from("sponsors").select("*").order("sort_no").order("created_at");
+  var br = await db.from("sponsor_brands").select("*").order("created_at");
+  var sponsors = sp.data || [];
+  var brands = br.data || [];
+
+  var html = "<h2>Sponsors</h2>";
+  html += '<div class="box"><h3>Add a sponsor</h3><form id="addSponsorForm" style="display:grid;gap:10px">';
+  html += '<div class="row"><label>Sponsor name <input id="spName" class="wide" required></label>';
+  html += '<label>Event <select id="spComp"><option value="">All events</option><option value="adults">Indoor Adults</option><option value="seniors">Indoor Seniors</option><option value="juniors">Indoor Juniors</option><option value="outdoor">Outdoor 2026</option></select></label>';
+  html += '<label>Main sponsor? <select id="spMain"><option value="no">No</option><option value="yes">Yes, highlight first</option></select></label></div>';
+  html += '<label>Short description <input id="spBlurb"></label>';
+  html += '<label>Website (starting https://) <input id="spSite" type="url"></label>';
+  html += '<label>Logo <input id="spLogo" type="file" accept="image/*"></label>';
+  html += '<div><button class="gold" type="submit">Add sponsor</button></div></form></div>';
+
+  if (!sponsors.length) html += '<p class="muted">No sponsors yet.</p>';
+  sponsors.forEach(function (s) {
+    var mine = brands.filter(function (b) { return b.sponsor_id === s.id; });
+    html += '<div class="box" data-id="' + s.id + '"><div class="row">';
+    if (s.logo_path) html += '<img src="' + fileUrl(s.logo_path) + '" alt="" style="width:64px;height:64px;object-fit:contain;background:#fff;padding:4px">';
+    html += '<label>Name <input class="wide" data-f="name" value="' + esc(s.name) + '"></label>';
+    html += '<label>Event <select data-f="comp">';
+    [["", "All events"], ["adults", "Indoor Adults"], ["seniors", "Indoor Seniors"], ["juniors", "Indoor Juniors"], ["outdoor", "Outdoor 2026"]].forEach(function (o) {
+      html += '<option value="' + o[0] + '"' + ((s.comp || "") === o[0] ? " selected" : "") + ">" + o[1] + "</option>";
+    });
+    html += '</select></label><label>Main <select data-f="main"><option value="no"' + (s.main ? "" : " selected") + '>No</option><option value="yes"' + (s.main ? " selected" : "") + ">Yes</option></select></label></div>";
+    html += '<div style="display:grid;gap:8px;margin-top:8px"><label>Description <input data-f="blurb" value="' + esc(s.blurb) + '"></label>';
+    html += '<label>Website <input data-f="website" value="' + esc(s.website) + '"></label>';
+    html += '<label>Replace logo <input data-f="logo" type="file" accept="image/*"></label></div>';
+    html += '<div class="row" style="margin-top:10px"><button type="button" class="gold" data-act="save">Save sponsor</button><button type="button" class="del" data-act="delete">Delete</button></div>';
+
+    html += '<h3 style="margin-top:16px">Brands (' + mine.length + ")</h3>";
+    mine.forEach(function (b) {
+      html += '<div class="item row" data-brand="' + b.id + '" data-path="' + esc(b.image_path || "") + '">';
+      if (b.image_path) html += '<img src="' + fileUrl(b.image_path) + '" alt="" style="width:48px;height:48px;object-fit:contain;background:#fff;padding:3px">';
+      html += '<span style="flex:1 1 140px">' + esc(b.name) + '</span><button type="button" class="del">Delete</button></div>';
+    });
+    html += '<form class="row brandForm" style="margin-top:8px"><label>Brand name <input data-b="name" required></label><label>Brand image <input data-b="img" type="file" accept="image/*"></label><label>Website <input data-b="site" type="url"></label><button type="submit">Add brand</button></form>';
+    html += "</div>";
+  });
+  $("tabBody").innerHTML = html;
+
+  $("addSponsorForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    try {
+      say("Saving...", "");
+      var logo = $("spLogo").files[0];
+      var row = {
+        name: $("spName").value.trim(), comp: $("spComp").value || null, main: $("spMain").value === "yes",
+        blurb: $("spBlurb").value.trim(), website: $("spSite").value.trim(),
+        logo_path: logo ? await uploadSponsorImage(logo) : null
+      };
+      var res = await db.from("sponsors").insert(row);
+      if (res.error) throw new Error(res.error.message);
+      await drawSponsors();
+      say("Sponsor added.", "ok");
+    } catch (err) { say("Could not add sponsor: " + err.message, "err"); }
+  });
+
+  $("tabBody").querySelectorAll(".box[data-id]").forEach(function (box) {
+    var id = box.getAttribute("data-id");
+    function val(f) { return box.querySelector('[data-f="' + f + '"]').value; }
+
+    box.querySelector('[data-act="save"]').addEventListener("click", async function () {
+      try {
+        say("Saving...", "");
+        var row = { name: val("name").trim(), comp: val("comp") || null, main: val("main") === "yes", blurb: val("blurb").trim(), website: val("website").trim() };
+        var file = box.querySelector('[data-f="logo"]').files[0];
+        if (file) row.logo_path = await uploadSponsorImage(file);
+        var res = await db.from("sponsors").update(row).eq("id", id);
+        if (res.error) throw new Error(res.error.message);
+        await drawSponsors();
+        say("Sponsor saved.", "ok");
+      } catch (err) { say("Could not save: " + err.message, "err"); }
+    });
+
+    var delBtn = box.querySelector('[data-act="delete"]');
+    delBtn.addEventListener("click", function () {
+      armDelete(delBtn, async function () {
+        var res = await db.from("sponsors").delete().eq("id", id);
+        if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
+        await drawSponsors();
+        say("Sponsor and its brands deleted.", "ok");
+      });
+    });
+
+    box.querySelector(".brandForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      try {
+        say("Saving...", "");
+        function bv(f) { return box.querySelector('[data-b="' + f + '"]'); }
+        var file = bv("img").files[0];
+        var row = { sponsor_id: id, name: bv("name").value.trim(), website: bv("site").value.trim(), image_path: file ? await uploadSponsorImage(file) : null };
+        var res = await db.from("sponsor_brands").insert(row);
+        if (res.error) throw new Error(res.error.message);
+        await drawSponsors();
+        say("Brand added.", "ok");
+      } catch (err) { say("Could not add brand: " + err.message, "err"); }
+    });
+
+    box.querySelectorAll("[data-brand]").forEach(function (item) {
+      var btn = item.querySelector(".del");
+      btn.addEventListener("click", function () {
+        armDelete(btn, async function () {
+          var res = await db.from("sponsor_brands").delete().eq("id", item.getAttribute("data-brand"));
+          if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
+          await drawSponsors();
+          say("Brand deleted.", "ok");
+        });
+      });
+    });
+  });
+}
+
+// ---------- Site settings and admins ----------
+async function drawSite() {
+  var result = await db.from("settings").select("*");
+  var set = {};
+  (result.data || []).forEach(function (r) { set[r.key] = r.value; });
+
+  var html = "<h2>Site</h2>";
+  html += '<div class="box"><h3>Text on the public site</h3><form id="siteForm" style="display:grid;gap:10px">';
+  html += '<label>Contact email <input id="sEmail" type="text" value="' + esc(set.email || "") + '"></label>';
+  html += '<label>Contact phone <input id="sPhone" type="text" value="' + esc(set.phone || "") + '"></label>';
+  html += '<label>Home page intro line <input id="sHero" type="text" value="' + esc(set.hero_text || "") + '"></label>';
+  html += '<label>Notice banner on the home page (leave empty for none) <input id="sNotice" type="text" placeholder="e.g. Indoor Juniors starts on 8 November" value="' + esc(set.notice || "") + '"></label>';
+  html += '<div><button class="gold" type="submit">Save site text</button></div></form></div>';
+
+  var adm = await db.from("admins").select("email").order("email");
+  var admins = adm.data || [];
+  html += '<div class="box"><h3>Who can use this admin page</h3>';
+  admins.forEach(function (a) {
+    html += '<div class="item row" data-email="' + esc(a.email) + '"><span style="flex:1 1 200px">' + esc(a.email) + '</span><button type="button" class="del">Delete</button></div>';
+  });
+  html += '<form id="addAdminForm" class="row" style="margin-top:12px"><label>Add an admin by email <input id="newAdmin" type="email" class="wide" required></label><button class="gold" type="submit">Add admin</button></form>';
+  html += '<p class="muted" style="margin-bottom:0">After adding an email here, create the same email as a user in Supabase (Authentication, Users, Add user) so they can sign in.</p></div>';
+  $("tabBody").innerHTML = html;
+
+  $("siteForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var rows = [
+      { key: "email", value: $("sEmail").value.trim() },
+      { key: "phone", value: $("sPhone").value.trim() },
+      { key: "hero_text", value: $("sHero").value.trim() },
+      { key: "notice", value: $("sNotice").value.trim() }
+    ];
+    var res = await db.from("settings").upsert(rows);
+    say(res.error ? "Could not save: " + res.error.message : "Saved. The public site shows it on the next refresh.", res.error ? "err" : "ok");
+  });
+
+  $("addAdminForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var res = await db.from("admins").insert({ email: $("newAdmin").value.trim().toLowerCase() });
+    if (res.error) { say("Could not add: " + res.error.message, "err"); return; }
+    await drawSite();
+    say("Admin added.", "ok");
+  });
+
+  $("tabBody").querySelectorAll("[data-email]").forEach(function (item) {
+    var btn = item.querySelector(".del");
+    btn.addEventListener("click", function () {
+      armDelete(btn, async function () {
+        var res = await db.from("admins").delete().eq("email", item.getAttribute("data-email"));
+        if (res.error) { say("Could not delete: " + res.error.message, "err"); return; }
+        await drawSite();
+        say("Admin removed.", "ok");
       });
     });
   });

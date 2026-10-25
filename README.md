@@ -31,6 +31,10 @@ A separate Supabase project called "Simbah Cup" holds the tables `teams`, `playe
 - Scores: add a match (home, away, date, time), then enter runs and wickets and save. It moves to Results and the table updates. Clear score puts it back to upcoming.
 - Gallery: upload several photos or videos at once. Photos are resized in the browser. Videos up to 50 MB.
 
+- Sponsors: add a sponsor for one event or all events, mark a main sponsor, upload its logo, and add its brands with images. They show in a gold "Presented by" container under each section heading, and on the home page.
+- Site: contact email and phone, the home page intro line, an optional notice banner, and the list of admin emails (add or remove people).
+- Players, matches and gallery captions can all be edited in place.
+
 Delete buttons need two taps to avoid accidents.
 
 ## Juniors
