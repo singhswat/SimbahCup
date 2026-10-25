@@ -13,37 +13,283 @@
    "comp": "juniors",
    "code": "SA",
    "name": "Simbah Academy",
-   "players": []
+   "players": [
+    {
+     "name": "Player 1",
+     "role": "",
+     "no": 1
+    },
+    {
+     "name": "Player 2",
+     "role": "",
+     "no": 2
+    },
+    {
+     "name": "Player 3",
+     "role": "",
+     "no": 3
+    },
+    {
+     "name": "Player 4",
+     "role": "",
+     "no": 4
+    },
+    {
+     "name": "Player 5",
+     "role": "",
+     "no": 5
+    },
+    {
+     "name": "Player 6",
+     "role": "",
+     "no": 6
+    },
+    {
+     "name": "Player 7",
+     "role": "",
+     "no": 7
+    },
+    {
+     "name": "Player 8",
+     "role": "",
+     "no": 8
+    }
+   ]
   },
   {
    "comp": "juniors",
    "code": "GB",
    "name": "Great Brickhill CC",
-   "players": []
+   "players": [
+    {
+     "name": "Player 1",
+     "role": "",
+     "no": 1
+    },
+    {
+     "name": "Player 2",
+     "role": "",
+     "no": 2
+    },
+    {
+     "name": "Player 3",
+     "role": "",
+     "no": 3
+    },
+    {
+     "name": "Player 4",
+     "role": "",
+     "no": 4
+    },
+    {
+     "name": "Player 5",
+     "role": "",
+     "no": 5
+    },
+    {
+     "name": "Player 6",
+     "role": "",
+     "no": 6
+    },
+    {
+     "name": "Player 7",
+     "role": "",
+     "no": 7
+    },
+    {
+     "name": "Player 8",
+     "role": "",
+     "no": 8
+    }
+   ]
   },
   {
    "comp": "juniors",
    "code": "BT",
    "name": "Bletchley Town CC",
-   "players": []
+   "players": [
+    {
+     "name": "Player 1",
+     "role": "",
+     "no": 1
+    },
+    {
+     "name": "Player 2",
+     "role": "",
+     "no": 2
+    },
+    {
+     "name": "Player 3",
+     "role": "",
+     "no": 3
+    },
+    {
+     "name": "Player 4",
+     "role": "",
+     "no": 4
+    },
+    {
+     "name": "Player 5",
+     "role": "",
+     "no": 5
+    },
+    {
+     "name": "Player 6",
+     "role": "",
+     "no": 6
+    },
+    {
+     "name": "Player 7",
+     "role": "",
+     "no": 7
+    },
+    {
+     "name": "Player 8",
+     "role": "",
+     "no": 8
+    }
+   ]
   },
   {
    "comp": "juniors",
    "code": "NP",
    "name": "Newport Pagnell CC",
-   "players": []
+   "players": [
+    {
+     "name": "Player 1",
+     "role": "",
+     "no": 1
+    },
+    {
+     "name": "Player 2",
+     "role": "",
+     "no": 2
+    },
+    {
+     "name": "Player 3",
+     "role": "",
+     "no": 3
+    },
+    {
+     "name": "Player 4",
+     "role": "",
+     "no": 4
+    },
+    {
+     "name": "Player 5",
+     "role": "",
+     "no": 5
+    },
+    {
+     "name": "Player 6",
+     "role": "",
+     "no": 6
+    },
+    {
+     "name": "Player 7",
+     "role": "",
+     "no": 7
+    },
+    {
+     "name": "Player 8",
+     "role": "",
+     "no": 8
+    }
+   ]
   },
   {
    "comp": "juniors",
    "code": "MA",
    "name": "MK Air CC",
-   "players": []
+   "players": [
+    {
+     "name": "Player 1",
+     "role": "",
+     "no": 1
+    },
+    {
+     "name": "Player 2",
+     "role": "",
+     "no": 2
+    },
+    {
+     "name": "Player 3",
+     "role": "",
+     "no": 3
+    },
+    {
+     "name": "Player 4",
+     "role": "",
+     "no": 4
+    },
+    {
+     "name": "Player 5",
+     "role": "",
+     "no": 5
+    },
+    {
+     "name": "Player 6",
+     "role": "",
+     "no": 6
+    },
+    {
+     "name": "Player 7",
+     "role": "",
+     "no": 7
+    },
+    {
+     "name": "Player 8",
+     "role": "",
+     "no": 8
+    }
+   ]
   },
   {
    "comp": "juniors",
    "code": "MC",
    "name": "MK Crescent/Silverstone",
-   "players": []
+   "players": [
+    {
+     "name": "Player 1",
+     "role": "",
+     "no": 1
+    },
+    {
+     "name": "Player 2",
+     "role": "",
+     "no": 2
+    },
+    {
+     "name": "Player 3",
+     "role": "",
+     "no": 3
+    },
+    {
+     "name": "Player 4",
+     "role": "",
+     "no": 4
+    },
+    {
+     "name": "Player 5",
+     "role": "",
+     "no": 5
+    },
+    {
+     "name": "Player 6",
+     "role": "",
+     "no": 6
+    },
+    {
+     "name": "Player 7",
+     "role": "",
+     "no": 7
+    },
+    {
+     "name": "Player 8",
+     "role": "",
+     "no": 8
+    }
+   ]
   },
   {
    "comp": "outdoor",
