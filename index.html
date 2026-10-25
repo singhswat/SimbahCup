@@ -56,7 +56,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.1; ma
 .tabs a, .bottom a { font-family: var(--display); font-weight: 700; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none; color: var(--muted); }
 .tabs a { padding: 20px 12px 17px; border-bottom: 3px solid transparent; }
 .tabs a[aria-current="page"], .tabs a:hover { color: var(--fg); border-bottom-color: var(--gold); }
-.bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--bg); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(6, 1fr); padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+.bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--bg); border-top: 1px solid var(--line); display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
 .bottom a { font-size: 10px; letter-spacing: 0.06em; text-align: center; padding: 14px 2px 13px; border-top: 3px solid transparent; }
 .bottom a[aria-current="page"] { color: var(--gold); border-top-color: var(--gold); }
 @media (min-width: 760px) { .tabs { display: flex; } .bottom { display: none; } body { padding-block: 0 24px; } }
@@ -85,6 +85,22 @@ h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.1; ma
 .sbrand { display: block; width: 72px; text-align: center; font-size: 11px; color: var(--muted); text-decoration: none; }
 .sbrand span.img { display: flex; align-items: center; justify-content: center; width: 72px; height: 54px; background: #fff; padding: 4px; margin-bottom: 3px; }
 .sbrand img { width: 100%; height: 100%; object-fit: contain; }
+.sbd-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 16px; }
+.sbd { border: 1px solid var(--line); background: var(--panel); padding: 14px; }
+.sbd h3 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.sbd ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.sbd li { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); min-width: 0; }
+.sbd li:first-child { border-top: 0; }
+.sbd .sbd-rk { width: 20px; color: var(--muted); font-size: 13px; flex: 0 0 auto; }
+.sbd .sbd-who { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.sbd .sbd-who small { display: block; color: var(--muted); font-size: 12px; }
+.sbd .sbd-n { font-weight: 800; font-size: 20px; flex: 0 0 auto; }
+.sbd.six { grid-column: 1 / -1; border-color: var(--gold); background: linear-gradient(145deg, rgba(201, 168, 76, 0.12), var(--panel)); }
+.sbd.six h3 { color: var(--gold); }
+.sbd.six .sbd-n { color: var(--gold-hi); font-size: 30px; }
+.sbd.six li:first-child .sbd-who { font-size: 20px; font-weight: 700; }
+.sbd.out h3 { color: #E0735A; }
+.sbd.out .sbd-n { color: #E0735A; }
 .notice { margin: 16px 0 0; padding: 12px 14px; border: 1px solid var(--gold); background: rgba(201, 168, 76, 0.12); font-weight: 600; }
 .hero p { max-width: 46ch; color: var(--muted); margin: 16px 0 24px; }
 .btns { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -254,7 +270,7 @@ footer b { font-family: var(--display); color: var(--fg); letter-spacing: 0.06em
 }
 
 [hidden] { display: none !important; }
-.bottom { grid-template-columns: repeat(7, 1fr); }
+.bottom { grid-auto-flow: column; grid-auto-columns: 1fr; }
 .bottom a { font-size: 9px; letter-spacing: 0.02em; }
 .gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 16px; }
 .gitem { padding: 0; border: 1px solid #23262D; background: var(--panel); cursor: pointer; display: block; min-width: 0; }
@@ -299,6 +315,8 @@ var VENUE = "Milton Keynes";
 var HERO_TEXT = "Indoor and outdoor cricket. Pick your section to see the table, fixtures and results.";
 var NOTICE = "";
 var sponsorList = [];
+var statTeams = [];
+var statPlayers = [];
 var brandList = [];
 
 var CFG = window.SIMBAH_CONFIG || {};
@@ -380,6 +398,8 @@ async function loadData() {
     if (teams.error || players.error || matches.error || gallery.error) throw new Error("load failed");
     Object.keys(COMPS).forEach(function (key) { fillComp(COMPS[key], teams.data, players.data, matches.data); });
     galleryItems = gallery.data;
+    statTeams = teams.data;
+    statPlayers = players.data;
     // Sponsors are optional: if they fail to load the rest of the site still works.
     var sp = await db.from("sponsors").select("*").order("sort_no");
     var br = await db.from("sponsor_brands").select("*").order("created_at");
@@ -511,6 +531,61 @@ function sponsorBox(compKey) {
   return html + "</section>";
 }
 
+// ---------- Stats: sixes, fours, twos, singles, run outs ----------
+var STAT_BOARDS = [
+  ["sixes", "Most sixes", "six"],
+  ["fours", "Most fours", ""],
+  ["twos", "Most twos", ""],
+  ["ones", "Most singles", ""],
+  ["run_outs", "Run-out club", "out"]
+];
+
+// Players with their team name and section, optionally for one section only
+function statRows(compKey) {
+  var teamById = {};
+  statTeams.forEach(function (t) { teamById[t.id] = t; });
+  var rows = [];
+  statPlayers.forEach(function (p) {
+    var t = teamById[p.team_id];
+    if (!t) return;
+    if (compKey !== "all" && t.comp !== compKey) return;
+    rows.push({ name: p.name, team: t.name, comp: t.comp, sixes: p.sixes || 0, fours: p.fours || 0, twos: p.twos || 0, ones: p.ones || 0, run_outs: p.run_outs || 0 });
+  });
+  return rows;
+}
+
+function boardHtml(rows, field, title, cls, limit) {
+  var list = rows.filter(function (r) { return r[field] > 0; });
+  list.sort(function (a, b) { return b[field] - a[field] || a.name.localeCompare(b.name); });
+  var html = '<section class="sbd ' + cls + '"><h3>' + title + "</h3>";
+  if (!list.length) return html + '<p class="muted" style="margin:0">Nothing yet.</p></section>';
+  html += "<ol>";
+  list.slice(0, limit).forEach(function (r, i) {
+    html += '<li><span class="sbd-rk">' + (i + 1) + '</span><span class="sbd-who">' + esc(r.name) + "<small>" + esc(r.team) + '</small></span><span class="sbd-n">' + r[field] + "</span></li>";
+  });
+  return html + "</ol></section>";
+}
+
+function viewStats() {
+  var html = '<h2>Player stats</h2><p class="sub">It is all about the sixes. Then fours, twos and singles. And the run-out club.</p>';
+  html += '<div class="filters"><select id="statSel" aria-label="Section"><option value="all">All sections</option>';
+  Object.keys(COMPS).forEach(function (k) { html += '<option value="' + k + '">' + COMPS[k].title + "</option>"; });
+  html += '</select></div><div id="statGrid" class="sbd-grid"></div>';
+  return html;
+}
+
+function wireStats() {
+  var sel = document.getElementById("statSel");
+  function draw() {
+    var rows = statRows(sel.value);
+    var html = "";
+    STAT_BOARDS.forEach(function (b) { html += boardHtml(rows, b[0], b[1], b[2], b[2] === "six" ? 10 : 5); });
+    document.getElementById("statGrid").innerHTML = html;
+  }
+  sel.addEventListener("change", draw);
+  draw();
+}
+
 function viewHome() {
   var html = "";
   if (NOTICE) html += '<p class="notice" role="status">' + esc(NOTICE) + "</p>";
@@ -523,6 +598,12 @@ function viewHome() {
   html += '<p class="lead-in">Outdoor · Last season</p><div class="tiles">' + tile(COMPS.outdoor, true) + "</div>";
 
   html += sponsorBox("all");
+  var topSix = statRows("all").filter(function (r) { return r.sixes > 0; });
+  topSix.sort(function (a, b) { return b.sixes - a.sixes || a.name.localeCompare(b.name); });
+  if (topSix.length) {
+    html += '<p class="lead-in">Six-hitters</p><div class="sbd-grid" style="margin-top:0">' + boardHtml(statRows("all"), "sixes", "Most sixes", "six", 3) + "</div>";
+    html += '<p style="margin:8px 0 0"><a href="#stats" style="color:var(--gold);font-weight:700">See all player stats</a></p>';
+  }
   if (galleryItems.length) {
     html += '<p class="lead-in">Latest from the gallery</p><div class="gal">';
     galleryItems.filter(function (g) { return g.kind === "image"; }).slice(0, 4).forEach(function (g) {
@@ -662,7 +743,7 @@ function closeLightbox() {
 
 // ---------- Routing ----------
 // Hash examples: #home, #adults, #adults-fixtures, #juniors-results, #outdoor-teams, #contact
-var NAV = [["home", "Home"], ["adults", "Adults"], ["seniors", "Seniors"], ["juniors", "Juniors"], ["outdoor", "Outdoor"], ["gallery", "Gallery"], ["contact", "Contact"]];
+var NAV = [["home", "Home"], ["adults", "Adults"], ["seniors", "Seniors"], ["juniors", "Juniors"], ["outdoor", "Outdoor"], ["stats", "Stats"], ["gallery", "Gallery"], ["contact", "Contact"]];
 
 function buildNav() {
   var html = "";
@@ -683,6 +764,9 @@ function show() {
   } else if (key === "gallery") {
     content = viewGallery();
     after = wireGallery;
+  } else if (key === "stats") {
+    content = viewStats();
+    after = wireStats;
   } else if (COMPS[key]) {
     content = viewComp(COMPS[key], tab);
     after = function () { wireMatches(COMPS[key], tab); };
